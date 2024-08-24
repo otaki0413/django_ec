@@ -22,6 +22,7 @@ environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
 IS_HEROKU = env.bool("DYNO", default=False)
+print("実行環境はHerokuですか？", IS_HEROKU)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -35,7 +36,7 @@ if not IS_HEROKU:
 
 # Generally avoid wildcards(*). However since Heroku router provides hostname validation it is ok
 if IS_HEROKU:
-    ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = [".herokuapp.com"]
 else:
     ALLOWED_HOSTS = []
 
