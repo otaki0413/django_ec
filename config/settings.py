@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import environ
+import os
 from pathlib import Path
+
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +23,7 @@ env = environ.Env()
 environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
-IS_HEROKU = env.bool("DYNO", default=False)
+IS_HEROKU = "DYNO" in os.environ
 print("実行環境はHerokuですか？", IS_HEROKU)
 
 # Quick-start development settings - unsuitable for production
