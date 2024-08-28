@@ -46,6 +46,7 @@ else:
 # Application definition
 
 INSTALLED_APPS = [
+    "ec.apps.EcConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
