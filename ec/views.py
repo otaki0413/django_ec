@@ -6,14 +6,11 @@ from django.views import generic
 from .models import Product, ProductImage
 
 
-class IndexView(generic.ListView):
+class ProductListView(generic.ListView):
+    model = Product
     template_name = "ec/list.html"
-    context_object_name = "product_list"
-
-    def get_queryset(self):
-        return Product.objects
 
 
-class DetailView(generic.DetailView):
+class ProductDetailView(generic.DetailView):
     model = Product
     template_name = "ec/detail.html"
