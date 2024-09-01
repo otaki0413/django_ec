@@ -24,7 +24,7 @@ env = environ.Env()
 environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
-IS_HEROKU = "DYNO" in os.environ
+IS_HEROKU = "DYNO" in os.environ and "CI" not in os.environ
 print("実行環境はHerokuですか？", IS_HEROKU)
 
 # Quick-start development settings - unsuitable for production
@@ -93,21 +93,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
-DATABASES = {
-    "default": env.db(),
-}
-
-MAX_CONN_AGE = 600
-
-if "DATABASE_URL" in os.environ:
-    # Configure Django for DATABASE_URL environment variable.
-    DATABASES["default"] = dj_database_url.config(
-        conn_max_age=MAX_CONN_AGE, ssl_require=True
-    )
-
-    # Enable test database if found in CI environment.
-    if "CI" in os.environ:
-        DATABASES["default"]["TEST"] = DATABASES["default"]
+if IS_HEROKU:
+    DATABASES = {
+        "default": dj_database_url.config(
+            env="DATABASE_URL",
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": env.db(),
+    }
 
 
 # Password validation
