@@ -7,7 +7,7 @@ from .models import Product, ProductImage
 
 class ProductListView(generic.ListView):
     model = Product
-    template_name = "ec/list.html"
+    template_name = "ec/index.html"
 
 
 class ProductDetailView(generic.DetailView):
