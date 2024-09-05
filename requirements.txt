@@ -19,6 +19,7 @@ sqlparse==0.5.1
 typing_extensions==4.12.2
 urllib3==2.2.2
 wheel==0.44.0
+whitenoise==6.7.0
 
 psycopg[c]; sys_platform == "linux"
 psycopg[binary]; sys_platform != "linux"
