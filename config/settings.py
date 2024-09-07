@@ -150,6 +150,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # 静的ファイルの配信URL
 STATIC_URL = "/static/"
 
+# 静的ファイルのストレージ設定
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
