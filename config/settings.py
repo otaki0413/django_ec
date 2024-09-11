@@ -156,6 +156,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cloudinaryの設定
 
+MEDIA_ROOT = BASE_DIR / "media/"
 MEDIA_URL = "/media/"
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": env("CLOUDINARY_NAME"),
