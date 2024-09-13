@@ -20,7 +20,7 @@ class ProductImage(models.Model):
         db_table = "product_image"
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="image/", blank=True)
+    image = models.ImageField(upload_to="images/", blank=True)
     created_at = models.DateTimeField("登録日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
