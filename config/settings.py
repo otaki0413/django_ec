@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 import environ
@@ -23,7 +24,7 @@ env = environ.Env()
 environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
-IS_HEROKU_APP = env("DYNO", default=False) and not env("CI", default=False)
+IS_HEROKU_APP = "DYNO" in os.environ and "CI" not in os.environ
 print("実行環境はHerokuですか？", IS_HEROKU_APP)
 
 # Quick-start development settings - unsuitable for production
