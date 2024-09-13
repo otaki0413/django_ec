@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
 from pathlib import Path
 
 import environ
@@ -19,15 +18,13 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# export された環境変数を読み込む
+# 環境変数の読込
 env = environ.Env()
-
-# もし .envファイルが存在する場合は、環境変数を読み込む（ただし同じ変数の値は上書きされない）
 environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
-IS_HEROKU = "DYNO" in os.environ and "CI" not in os.environ
-print("実行環境はHerokuですか？", IS_HEROKU)
+IS_HEROKU_APP = env("DYNO", default=False) and not env("CI", default=False)
+print("実行環境はHerokuですか？", IS_HEROKU_APP)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -36,11 +33,11 @@ print("実行環境はHerokuですか？", IS_HEROKU)
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if not IS_HEROKU:
+if not IS_HEROKU_APP:
     DEBUG = True
 
 # Generally avoid wildcards(*). However since Heroku router provides hostname validation it is ok
-if IS_HEROKU:
+if IS_HEROKU_APP:
     ALLOWED_HOSTS = [".herokuapp.com"]
 else:
     ALLOWED_HOSTS = ["*"]
@@ -95,8 +92,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-
-if IS_HEROKU:
+if IS_HEROKU_APP:
     DATABASES = {
         "default": dj_database_url.config(
             env="DATABASE_URL",
@@ -156,8 +152,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Cloudinaryの設定
 
-MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": env("CLOUDINARY_NAME"),
     "API_KEY": env("CLOUDINARY_API_KEY"),
