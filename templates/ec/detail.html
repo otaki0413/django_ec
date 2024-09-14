@@ -37,8 +37,8 @@
     <div class="container px-4 px-lg-5 my-5">
         <div class="row gx-4 gx-lg-5 align-items-center">
             <div class="col-md-6">
-                {% if product.productimage_set.exists %}
-                <img class="card-img-top mb-5 mb-md-0" src="{{ product.productimage_set.first.image.url }}" alt="{{ product.name }}" />
+                {% if product.images.exists %}
+                <img class="card-img-top mb-5 mb-md-0" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" />
                 {% else %}
                 <img class="card-img-top mb-5 mb-md-0" src="https://dummyimage.com/600x700/dee2e6/6c757d.jpg" alt="サンプル画像" />
                 {% endif %}
@@ -71,8 +71,8 @@
                 <div class="card h-100">
                     <!-- Product image-->
                     <a href="{% url "ec:product_detail" related_product.id %}">
-                        {% if related_product.productimage_set.exists %}
-                        <img class="card-img-top" src="{{ related_product.productimage_set.first.image.url }}" alt="{{ related_product.name }}" />
+                        {% if related_product.images.exists %}
+                        <img class="card-img-top" src="{{ related_product.images.first.image.url }}" alt="{{ related_product.name }}" />
                         {% else %}
                         <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="サンプル画像" />
                         {% endif %}

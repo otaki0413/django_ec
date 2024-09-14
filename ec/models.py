@@ -19,7 +19,9 @@ class ProductImage(models.Model):
     class Meta:
         db_table = "product_image"
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images"
+    )
     image = models.ImageField(upload_to="images/", blank=True)
     created_at = models.DateTimeField("登録日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
