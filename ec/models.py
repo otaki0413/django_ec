@@ -5,9 +5,9 @@ class Product(models.Model):
     class Meta:
         db_table = "product"
 
-    name = models.CharField("商品名", max_length=50)
-    description = models.TextField("説明", blank=True, null=True)
-    price = models.IntegerField("値段", blank=True, null=True, default=0)
+    name = models.CharField("商品名", max_length=50, null=False)
+    description = models.TextField("説明", blank=True, null=False)
+    price = models.IntegerField("値段", null=False, default=0)
     created_at = models.DateTimeField("登録日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
