@@ -1,10 +1,6 @@
-from typing import Any
-from django.db.models.query import QuerySet
-from django.shortcuts import render
-from django.http import HttpResponse
 from django.views import generic
 
-from .models import Product, ProductImage
+from .models import Product
 
 
 class ProductListView(generic.ListView):
