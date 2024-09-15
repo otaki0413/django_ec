@@ -48,6 +48,7 @@ else:
 
 INSTALLED_APPS = [
     "ec.apps.EcConfig",
+    "adminproducts.apps.AdminproductsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
