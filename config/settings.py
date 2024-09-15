@@ -14,17 +14,18 @@ import os
 from pathlib import Path
 
 import environ
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# .envから環境変数を取得
+# 環境変数の読込
 env = environ.Env()
 environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 # 実行環境がHerokuかどうかを判別するフラグ
-IS_HEROKU = "DYNO" in os.environ
-print("実行環境はHerokuですか？", IS_HEROKU)
+IS_HEROKU_APP = "DYNO" in os.environ and "CI" not in os.environ
+print("実行環境はHerokuですか？", IS_HEROKU_APP)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -33,29 +34,33 @@ print("実行環境はHerokuですか？", IS_HEROKU)
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if not IS_HEROKU:
+if not IS_HEROKU_APP:
     DEBUG = True
 
 # Generally avoid wildcards(*). However since Heroku router provides hostname validation it is ok
-if IS_HEROKU:
+if IS_HEROKU_APP:
     ALLOWED_HOSTS = [".herokuapp.com"]
 else:
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "ec.apps.EcConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -69,7 +74,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "config/templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -88,9 +93,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": env.db(),
-}
+if IS_HEROKU_APP:
+    DATABASES = {
+        "default": dj_database_url.config(
+            env="DATABASE_URL",
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": env.db(),
+    }
 
 
 # Password validation
@@ -127,9 +142,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Cloudinaryの設定
+
+MEDIA_URL = "/media/"
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": env("CLOUDINARY_NAME"),
+    "API_KEY": env("CLOUDINARY_API_KEY"),
+    "API_SECRET": env("CLOUDINARY_API_SECRET"),
+}
+
+
+# Storage Setting
+# https://docs.djangoproject.com/ja/4.2/ref/settings/#storages
+
+STORAGES = {
+    # 静的ファイル用
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    # メディアファイル用
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+}
