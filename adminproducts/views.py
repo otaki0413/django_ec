@@ -30,22 +30,21 @@ class AdminProductRegisterView(generic.CreateView):
         return context
 
     def form_valid(self, form):
-        """有効なフォームデータの場合に実行される処理"""
         # Productモデルのインスタンスを保存
         product = form.save()
+        # ProductImageモデルのインスタンスを保存
+        self.save_product_image(product=product)
+        return super().form_valid(form)
+
+    def save_product_image(self, product):
         # 画像フォームのインスタンス生成（データとファイルをセットする）
         image_form = self.image_form_class(self.request.POST, self.request.FILES)
-
         # 画像フォームのデータが有効かつimageフィールドに画像がアップロードされている場合、保存処理を行う
         if image_form.is_valid() and image_form.cleaned_data.get("image"):
             # 画像データを一旦取得し、関連するProductインスタンスを追加
             product_image = image_form.save(commit=False)
             product_image.product = product
-            # ProductImageモデルのインスタンスを保存
             product_image.save()
-
-        # 親クラスのデフォルト処理（リダイレクトなど）を実行
-        return super().form_valid(form)
 
 
 class AdminProductEditView(generic.UpdateView):
@@ -64,9 +63,13 @@ class AdminProductEditView(generic.UpdateView):
         return context
 
     def form_valid(self, form):
-        """有効なフォームデータの場合に実行される処理"""
         # Productモデルのインスタンスを保存
         product = form.save()
+        # 画像データの更新処理
+        self.update_product_image(product=product)
+        return super().form_valid(form)
+
+    def update_product_image(self, product):
         # 画像フォームのデータとファイルを取得
         image_form = self.image_form_class(self.request.POST, self.request.FILES)
 
@@ -74,23 +77,16 @@ class AdminProductEditView(generic.UpdateView):
         if image_form.is_valid() and image_form.cleaned_data.get("image"):
             # 既存の画像データ取得
             old_image = product.images.first()
-
             # 既存の画像が存在する場合、Cloudinaryから削除
             if old_image and old_image.image:
                 cloudinary.uploader.destroy(old_image.image.name, invalidate=True)
-
-            # 既存の画像レコード削除
-            old_image.delete()
+                # 既存の画像レコード削除
+                old_image.delete()
 
             # 新規画像データを取得し、関連するProductインスタンスを追加
             product_image = image_form.save(commit=False)
             product_image.product = product
-
-            # ProductImageモデルのインスタンスを保存
             product_image.save()
-
-        # 親クラスのデフォルト処理（リダイレクトなど）を実行
-        return super().form_valid(form)
 
 
 class AdminProductDeleteView(generic.DeleteView):
@@ -101,10 +97,11 @@ class AdminProductDeleteView(generic.DeleteView):
     def form_valid(self, form):
         # 削除対象のProductインスタンス取得
         product = self.get_object()
-        # 関連するProductImageインスタンス取得
-        product_image = product.images.first()
-        # 画像が存在する場合、Cloudinaryから削除
+        # 関連するProductImageインスタンス取得して、Cloudinaryから削除
+        self.delete_image_from_cloudinary(product_image=product.images.first())
+        return super().form_valid(form)
+
+    def delete_image_from_cloudinary(self, product_image):
+        # Cloudinaryから画像を削除する処理
         if product_image and product_image.image:
             cloudinary.uploader.destroy(product_image.image.name, invalidate=True)
-
-        return super().form_valid(form)
