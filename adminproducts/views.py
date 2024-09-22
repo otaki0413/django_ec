@@ -2,7 +2,6 @@ from django.views import generic
 from .forms import ProductRegisterForm, ProductImageRegisterForm
 from ec.models import Product, ProductImage
 from django.urls import reverse_lazy
-
 import cloudinary.uploader
 
 
@@ -71,10 +70,22 @@ class AdminProductEditView(generic.UpdateView):
         # 画像フォームのデータとファイルを取得
         image_form = self.image_form_class(self.request.POST, self.request.FILES)
 
-        if image_form.is_valid():
-            # 画像データを一旦取得し、関連するProductインスタンスを追加
+        # 画像フォームのデータが有効かつimageフィールドに画像がアップロードされている場合、既存の画像を削除し、新規画像を保存する
+        if image_form.is_valid() and image_form.cleaned_data.get("image"):
+            # 既存の画像データ取得
+            old_image = product.images.first()
+
+            # 既存の画像が存在する場合、Cloudinaryから削除
+            if old_image and old_image.image:
+                cloudinary.uploader.destroy(old_image.image.name, invalidate=True)
+
+            # 既存の画像レコード削除
+            old_image.delete()
+
+            # 新規画像データを取得し、関連するProductインスタンスを追加
             product_image = image_form.save(commit=False)
             product_image.product = product
+
             # ProductImageモデルのインスタンスを保存
             product_image.save()
 
