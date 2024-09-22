@@ -13,4 +13,9 @@ urlpatterns = [
         views.AdminProductEditView.as_view(),
         name="admin_product_edit",
     ),
+    path(
+        "<int:pk>/delete",
+        views.AdminProductDeleteView.as_view(),
+        name="admin_product_delete",
+    ),
 ]

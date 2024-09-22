@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}管理者用：商品削除{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <header class="d-flex align-items-center justify-content-between py-4 mb-4 border-bottom">
+        <div>
+            <span class="fs-4 fw-bold">管理者用ページ</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url "adminproducts:admin_product_list" %}" class="btn btn-primary" role="button">商品一覧へ</a>
+            <button type="button" class="btn btn-dark">ログアウト</button>
+        </div>
+    </header>
+</div>
+<div class="mx-auto" style="max-width: 600px;">
+    <form method="post">
+    {% csrf_token %}
+    <p>この商品を削除しますか？</p>
+    <table class="table table-sm table-bordered table-responsive">
+        <tbody>
+            <tr>
+                <th>ID</th>
+                <td>{{ object.id }}</td>
+            </tr>
+            <tr>
+                <th>商品名</th>
+                <td>{{ object.name }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <button type="submit" class="w-100 btn btn-danger">完全に削除する</button>
+</form>
+</div>
+{% endblock content %}

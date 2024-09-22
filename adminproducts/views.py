@@ -77,3 +77,9 @@ class AdminProductEditView(generic.UpdateView):
 
         # 親クラスのデフォルト処理（リダイレクトなど）を実行
         return super().form_valid(form)
+
+
+class AdminProductDeleteView(generic.DeleteView):
+    model = Product
+    template_name = "adminproducts/delete.html"
+    success_url = reverse_lazy("adminproducts:admin_product_list")
