@@ -9,7 +9,7 @@ urlpatterns = [
         "new/", views.AdminProductRegisterView.as_view(), name="admin_product_register"
     ),
     path(
-        "edit/<int:pk>/",
+        "<int:pk>/edit",
         views.AdminProductEditView.as_view(),
         name="admin_product_edit",
     ),
