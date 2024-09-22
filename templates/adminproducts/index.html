@@ -44,7 +44,7 @@
                     <td>{{ product.updated_at }}</td>
                     <td>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-light border px-4">編集</button>
+                            <a href="{% url "adminproducts:admin_product_edit" product.id %}" class="btn btn-light border px-4" role="button">編集</a>
                             <button type="button" class="btn btn-danger px-4">削除</button>
                         </div>
                     </td>
