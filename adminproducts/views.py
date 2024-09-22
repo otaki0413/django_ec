@@ -3,6 +3,8 @@ from .forms import ProductRegisterForm, ProductImageRegisterForm
 from ec.models import Product, ProductImage
 from django.urls import reverse_lazy
 
+import cloudinary.uploader
+
 
 class AdminProductListView(generic.ListView):
     model = Product
@@ -84,3 +86,14 @@ class AdminProductDeleteView(generic.DeleteView):
     model = Product
     template_name = "adminproducts/delete.html"
     success_url = reverse_lazy("adminproducts:admin_product_list")
+
+    def form_valid(self, form):
+        # 削除対象のProductインスタンス取得
+        product = self.get_object()
+        # 関連するProductImageインスタンス取得
+        product_image = product.images.first()
+        # 画像が存在する場合、Cloudinaryから削除
+        if product_image and product_image.image:
+            cloudinary.uploader.destroy(product_image.image.name, invalidate=True)
+
+        return super().form_valid(form)
