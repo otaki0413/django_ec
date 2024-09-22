@@ -32,10 +32,11 @@ class AdminProductRegisterView(generic.CreateView):
         """有効なフォームデータの場合に実行される処理"""
         # Productモデルのインスタンスを保存
         product = form.save()
-        # 画像フォームのデータとファイルを取得
+        # 画像フォームのインスタンス生成（データとファイルをセットする）
         image_form = self.image_form_class(self.request.POST, self.request.FILES)
 
-        if image_form.is_valid():
+        # 画像フォームのデータが有効かつimageフィールドに画像がアップロードされている場合、保存処理を行う
+        if image_form.is_valid() and image_form.cleaned_data.get("image"):
             # 画像データを一旦取得し、関連するProductインスタンスを追加
             product_image = image_form.save(commit=False)
             product_image.product = product
