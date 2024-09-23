@@ -1,10 +1,15 @@
 from django.views import generic
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+
+import cloudinary.uploader
+from basicauth.decorators import basic_auth_required
+
 from .forms import ProductRegisterForm, ProductImageRegisterForm
 from ec.models import Product, ProductImage
-from django.urls import reverse_lazy
-import cloudinary.uploader
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminProductListView(generic.ListView):
     model = Product
     template_name = "adminproducts/index.html"
@@ -14,6 +19,7 @@ class AdminProductListView(generic.ListView):
         return Product.objects.prefetch_related("images")
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminProductRegisterView(generic.CreateView):
     model = Product
     form_class = ProductRegisterForm
@@ -47,6 +53,7 @@ class AdminProductRegisterView(generic.CreateView):
             product_image.save()
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminProductEditView(generic.UpdateView):
     model = Product
     form_class = ProductRegisterForm
@@ -89,6 +96,7 @@ class AdminProductEditView(generic.UpdateView):
             product_image.save()
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminProductDeleteView(generic.DeleteView):
     model = Product
     template_name = "adminproducts/delete.html"

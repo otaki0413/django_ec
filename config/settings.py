@@ -175,3 +175,9 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
 }
+
+# Basic認証に用いる認証情報
+
+BASICAUTH_USERS = {
+    "admin": "pw",
+}
