@@ -23,3 +23,7 @@ class ProductDetailView(generic.DetailView):
             "images"
         ).order_by("-created_at")[:4]
         return context
+
+
+class CheckoutView(generic.TemplateView):
+    template_name = "ec/checkout.html"
