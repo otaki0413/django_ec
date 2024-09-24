@@ -48,6 +48,7 @@ else:
 
 INSTALLED_APPS = [
     "ec.apps.EcConfig",
+    "adminproducts.apps.AdminproductsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -173,4 +174,10 @@ STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
+}
+
+# Basic認証に用いる認証情報
+
+BASICAUTH_USERS = {
+    "admin": "pw",
 }
