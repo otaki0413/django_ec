@@ -55,7 +55,7 @@
                         {% else %}
                         <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="サンプル画像" />
                         {% endif %}
-                    <a>
+                    </a>
                     <!-- Product details-->
                     <div class="card-body p-4">
                         <div class="text-center">
@@ -67,7 +67,13 @@
                     </div>
                     <!-- Product actions-->
                     <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
+                        <div class="text-center">
+                            <form action="{% url "ec:add_to_cart" %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <button type="submit" class="btn btn-outline-dark mt-auto">Add to cart</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
