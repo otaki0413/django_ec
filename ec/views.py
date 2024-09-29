@@ -13,6 +13,12 @@ class ProductListView(ListView):
     def get_queryset(self):
         return Product.objects.prefetch_related("images")
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        # カート商品数をコンテキストに設定
+        context["cart_product_count"] = getCartProductCount(self.request)
+        return context
+
 
 class ProductDetailView(DetailView):
     model = Product
@@ -24,6 +30,8 @@ class ProductDetailView(DetailView):
         context["related_product_list"] = Product.objects.prefetch_related(
             "images"
         ).order_by("-created_at")[:4]
+        # カート商品数をコンテキストに設定
+        context["cart_product_count"] = getCartProductCount(self.request)
         return context
 
 
@@ -137,6 +145,21 @@ class DeleteFromCartView(View):
 
         # チェックアウトページにリダイレクト
         return redirect("ec:checkout")
+
+
+def getCartProductCount(request):
+    """カート商品数を取得する処理"""
+    cart_product_count = 0
+
+    # セッションキーの取得
+    session_key = request.session.session_key
+
+    # カート商品数の取得
+    if session_key:
+        cart = Cart.objects.prefetch_related("products").get(session_key=session_key)
+        cart_product_count = cart.products.all().count
+
+    return cart_product_count
 
 
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？
