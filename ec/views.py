@@ -1,11 +1,11 @@
-from django.views import generic
+from django.views.generic import ListView, DetailView, TemplateView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
 
 from .models import Product, Cart, CartProduct
 
 
-class ProductListView(generic.ListView):
+class ProductListView(ListView):
     model = Product
     template_name = "ec/index.html"
     context_object_name = "product_list"
@@ -14,7 +14,7 @@ class ProductListView(generic.ListView):
         return Product.objects.prefetch_related("images")
 
 
-class ProductDetailView(generic.DetailView):
+class ProductDetailView(DetailView):
     model = Product
     template_name = "ec/detail.html"
     context_object_name = "product"
@@ -27,11 +27,11 @@ class ProductDetailView(generic.DetailView):
         return context
 
 
-class CheckoutView(generic.TemplateView):
+class CheckoutView(TemplateView):
     template_name = "ec/checkout.html"
 
 
-class AddToCartView(generic.View):
+class AddToCartView(View):
     """商品をカートに追加する処理"""
 
     def post(self, request, *args, **kwargs):
