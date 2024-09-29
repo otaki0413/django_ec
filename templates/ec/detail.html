@@ -95,7 +95,7 @@
                         <div class="text-center">
                             <form action="{% url "ec:add_to_cart" %}" method="POST">
                                 {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="product_id" value="{{ related_product.id }}">
                                 <button type="submit" class="btn btn-outline-dark mt-auto">Add to cart</button>
                             </form>
                         </div>
