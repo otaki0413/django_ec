@@ -41,6 +41,17 @@ def add_to_cart(request):
 
         # 商品の取得（存在しない場合404エラー）
         product = get_object_or_404(Product, pk=product_id)
+        print(request.POST)
+
+        try:
+            # フォームデータから数量取得（一覧画面からのカート追加の場合、デフォルト値1が入る）
+            quantity = int(request.POST.get("quantity", 1))
+            print(quantity)
+            # 数量チェック
+            if quantity < 1:
+                return HttpResponseBadRequest("数量は1以上である必要があります。")
+        except ValueError:
+            return HttpResponseBadRequest("無効な数量が指定されました。")
 
         # セッションキーの取得
         session_key = request.session.session_key
@@ -60,10 +71,10 @@ def add_to_cart(request):
         # 数量の更新
         if created_product:
             # 新規商品をカートに追加する場合
-            cart_product.quantity = 1
+            cart_product.quantity = quantity
         else:
             # 既存商品をカートに追加する場合
-            cart_product.quantity += 1
+            cart_product.quantity += quantity
 
         # カート商品の保存
         cart_product.save()

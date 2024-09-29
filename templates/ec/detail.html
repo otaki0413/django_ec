@@ -50,13 +50,17 @@
                     <span>￥{{ product.price }}</span>
                 </div>
                 <p class="lead">{{ product.description }}</p>
-                <div class="d-flex">
-                    <input class="form-control text-center me-3" id="inputQuantity" type="num" value="1" style="max-width: 3rem" />
-                    <button class="btn btn-outline-dark flex-shrink-0" type="button">
-                        <i class="bi-cart-fill me-1"></i>
-                        Add to cart
-                    </button>
-                </div>
+                <form action="{% url "ec:add_to_cart" %}" method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input class="form-control text-center me-3" id="inputQuantity" type="num" name="quantity" value="1" style="max-width: 3rem" />
+                        <button type="submit" class="btn btn-outline-dark flex-shrink-0">
+                            <i class="bi-cart-fill me-1"></i>
+                            Add to cart
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -88,7 +92,13 @@
                     </div>
                     <!-- Product actions-->
                     <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
+                        <div class="text-center">
+                            <form action="{% url "ec:add_to_cart" %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <button type="submit" class="btn btn-outline-dark mt-auto">Add to cart</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
