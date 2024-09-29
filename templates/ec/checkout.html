@@ -18,30 +18,24 @@
       <div class="col-md-5 col-lg-4 order-md-last">
         <h4 class="d-flex justify-content-between align-items-center mb-3">
           <span class="text-primary">Your cart</span>
-          <span class="badge bg-primary rounded-pill">3</span>
+          <span class="badge bg-primary rounded-pill">{{ cart_product_list.count }}</span>
         </h4>
-        <ul class="list-group mb-3">
-          <li class="list-group-item d-flex justify-content-between lh-sm">
-            <div>
-              <h6 class="my-0">Product name</h6>
-              <small class="text-body-secondary">Brief description</small>
+        <ul class="list-group mb-4">
+          {% for cp in cart_product_list %}
+          <li class="list-group-item d-flex justify-content-between align-items-center lh-sm">
+            <div class="w-50">
+              <div class="fw-bold">{{ cp.product.name }}</div>
+              <div class="small  text-truncate">{{ cp.product.description }}</div>
             </div>
-            <span class="text-body-secondary">$12</span>
-          </li>
-          <li class="list-group-item d-flex justify-content-between lh-sm">
-            <div>
-              <h6 class="my-0">Second product</h6>
-              <small class="text-body-secondary">Brief description</small>
+            <div class="d-flex flex-column align-items-end gap-1 w-auto">
+              <div class="w-100 text-start">
+                <div class="small">数量：{{ cp.quantity }}</div>
+                <div class="small">小計：￥{{ cp.total_price }}</div>
+              </div>
+              <button class="btn btn-danger btn-sm">カートから削除</button>
             </div>
-            <span class="text-body-secondary">$8</span>
           </li>
-          <li class="list-group-item d-flex justify-content-between lh-sm">
-            <div>
-              <h6 class="my-0">Third item</h6>
-              <small class="text-body-secondary">Brief description</small>
-            </div>
-            <span class="text-body-secondary">$5</span>
-          </li>
+          {% endfor %}
           <li
             class="list-group-item d-flex justify-content-between bg-body-tertiary"
           >
@@ -52,7 +46,7 @@
             <span class="text-success">−$5</span>
           </li>
           <li class="list-group-item d-flex justify-content-between">
-            <span>Total (USD)</span>
+            <span>合計金額</span>
             <strong>$20</strong>
           </li>
         </ul>

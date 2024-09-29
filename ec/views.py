@@ -30,6 +30,31 @@ class ProductDetailView(DetailView):
 class CheckoutView(TemplateView):
     template_name = "ec/checkout.html"
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+
+        # セッションキーの取得
+        session_key = self.request.session.session_key
+        # セッションキーが存在しない場合は、空のカートとする
+        if not session_key:
+            context["cart_product_list"] = []
+            return context
+
+        try:
+            # カートの取得
+            cart = Cart.objects.prefetch_related("products").get(
+                session_key=session_key
+            )
+
+            # カート内商品をコンテキストに渡す
+            context["cart_product_list"] = cart.products.all()
+
+        except Cart.DoesNotExist:
+            # カートが存在しない場合は空のカートとする
+            context["cart_product_list"] = []
+
+        return context
+
 
 class AddToCartView(View):
     """商品をカートに追加する処理"""

@@ -58,3 +58,8 @@ class CartProduct(models.Model):
 
     def __str__(self):
         return f"{self.product.name} (Quantity: {self.quantity}) in Cart {self.cart.session_key}"
+
+    @property
+    def total_price(self):
+        """各カート商品の合計金額"""
+        return self.product.price * self.quantity
