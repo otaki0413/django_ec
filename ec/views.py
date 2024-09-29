@@ -42,12 +42,10 @@ class AddToCartView(View):
 
         # 商品の取得（存在しない場合404エラー）
         product = get_object_or_404(Product, pk=product_id)
-        print(request.POST)
 
         try:
             # フォームデータから数量取得（一覧画面からのカート追加の場合、デフォルト値1が入る）
             quantity = int(request.POST.get("quantity", 1))
-            print(quantity)
             # 数量チェック
             if quantity < 1:
                 return HttpResponseBadRequest("数量は1以上である必要があります。")
@@ -83,7 +81,6 @@ class AddToCartView(View):
         # リクエスト元のURL取得
         # 参考：https://just-python.com/document/django/views-basic/request-method
         incoming_url = request.META.get("HTTP_REFERER")
-        print(incoming_url)
 
         # リクエスト元のURLが存在する場合は、そのURLにリダイレクト
         # MEMO：詳細ページからPOSTリクエストした際には、詳細ページにリダイレクトしたかったため、この実装にしている。
