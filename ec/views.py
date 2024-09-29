@@ -80,8 +80,17 @@ class AddToCartView(View):
         # カート商品の保存
         cart_product.save()
 
-        # 商品一覧ページにリダイレクト
-        return redirect("ec:product_list")
+        # リクエスト元のURL取得
+        # 参考：https://just-python.com/document/django/views-basic/request-method
+        incoming_url = request.META.get("HTTP_REFERER")
+        print(incoming_url)
+
+        # リクエスト元のURLが存在する場合は、そのURLにリダイレクト
+        # MEMO：詳細ページからPOSTリクエストした際には、詳細ページにリダイレクトしたかったため、この実装にしている。
+        if incoming_url:
+            return redirect(incoming_url)
+        else:
+            return redirect("ec:product_list")
 
 
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？
