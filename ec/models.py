@@ -60,6 +60,6 @@ class CartProduct(models.Model):
         return f"{self.product.name} (Quantity: {self.quantity}) in Cart {self.cart.session_key}"
 
     @property
-    def total_price(self):
-        """各カート商品の合計金額"""
+    def sub_total(self):
+        """各カート商品の小計"""
         return self.product.price * self.quantity

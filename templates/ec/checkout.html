@@ -30,7 +30,7 @@
             <div class="d-flex flex-column align-items-end gap-1 w-auto">
               <div class="w-100 text-start">
                 <div class="small">数量：{{ cp.quantity }}</div>
-                <div class="small">小計：￥{{ cp.total_price }}</div>
+                <div class="small">小計：￥{{ cp.sub_total }}</div>
               </div>
               <form action="{% url "ec:delete_from_cart" %}" method="POST">
                 {% csrf_token %}
@@ -51,7 +51,7 @@
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span>合計金額</span>
-            <strong>$20</strong>
+            <strong>￥{{ total_amount }}</strong>
           </li>
         </ul>
 
