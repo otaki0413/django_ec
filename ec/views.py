@@ -115,4 +115,21 @@ class AddToCartView(View):
             return redirect("ec:product_list")
 
 
+class DeleteFromCart(View):
+    """商品をカートから削除する処理"""
+
+    def post(self, request, *args, **kwargs):
+        # フォームデータからカート商品ID取得
+        cart_product_id = request.POST.get("cart_product_id")
+
+        # カート商品の取得（存在しない場合404エラー）
+        cart_product = get_object_or_404(CartProduct, pk=cart_product_id)
+
+        # カートから削除
+        cart_product.delete()
+
+        # チェックアウトページにリダイレクト
+        return redirect("ec:checkout")
+
+
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？

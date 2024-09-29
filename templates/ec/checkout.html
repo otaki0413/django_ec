@@ -32,7 +32,11 @@
                 <div class="small">数量：{{ cp.quantity }}</div>
                 <div class="small">小計：￥{{ cp.total_price }}</div>
               </div>
-              <button class="btn btn-danger btn-sm">カートから削除</button>
+              <form action="{% url "ec:delete_from_cart" %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="cart_product_id" value="{{ cp.id }}">
+                <button type="submit" class="btn btn-danger btn-sm">カートから削除</button>
+              </form>
             </div>
           </li>
           {% endfor %}
