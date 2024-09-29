@@ -122,7 +122,7 @@ class AddToCartView(View):
             return redirect("ec:product_list")
 
 
-class DeleteFromCart(View):
+class DeleteFromCartView(View):
     """商品をカートから削除する処理"""
 
     def post(self, request, *args, **kwargs):
