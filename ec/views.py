@@ -31,9 +31,10 @@ class CheckoutView(generic.TemplateView):
     template_name = "ec/checkout.html"
 
 
-def add_to_cart(request):
+class AddToCartView(generic.View):
     """商品をカートに追加する処理"""
-    if request.method == "POST":
+
+    def post(self, request, *args, **kwargs):
         # フォームデータから商品ID取得
         product_id = request.POST.get("product_id")
         if not product_id:
@@ -81,8 +82,6 @@ def add_to_cart(request):
 
         # 商品一覧ページにリダイレクト
         return redirect("ec:product_list")
-
-    return HttpResponseBadRequest("無効なリクエストです。")
 
 
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？
