@@ -43,6 +43,15 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart {self.session_key} (Created: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')})"
 
+    @property
+    def total_amount(self):
+        """カート内の合計金額"""
+        total_amount = 0
+        for product in self.products.all():
+            # 各カート商品の小計を加算
+            total_amount += product.sub_total
+        return total_amount
+
 
 class CartProduct(models.Model):
     class Meta:

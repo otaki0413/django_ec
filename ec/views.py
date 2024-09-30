@@ -45,6 +45,7 @@ class CheckoutView(TemplateView):
         session_key = self.request.session.session_key
         # セッションキーが存在しない場合は、空のカートとする
         if not session_key:
+            context["cart"] = None
             context["cart_product_list"] = []
             return context
 
@@ -54,18 +55,13 @@ class CheckoutView(TemplateView):
                 session_key=session_key
             )
 
-            # カート内の合計金額の計算
-            total_amount = 0
-            for cp in cart.products.all():
-                # 各カート商品の小計を加算
-                total_amount += cp.sub_total
-
-            # カート内商品と合計金額をコンテキストに渡す
+            # カートとカート内商品の情報をコンテキストに渡す
+            context["cart"] = cart
             context["cart_product_list"] = cart.products.all()
-            context["total_amount"] = total_amount
 
         except Cart.DoesNotExist:
             # カートが存在しない場合は空のカートとする
+            context["cart"] = None
             context["cart_product_list"] = []
 
         return context
