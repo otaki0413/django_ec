@@ -28,3 +28,47 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"{self.product.name} Image"
+
+
+class Cart(models.Model):
+    class Meta:
+        db_table = "cart"
+
+    session_key = models.CharField(
+        "セッションキー", max_length=40, null=False, unique=True
+    )
+    created_at = models.DateTimeField("登録日時", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+
+    def __str__(self):
+        return f"Cart {self.session_key} (Created: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')})"
+
+    @property
+    def total_amount(self):
+        """カート内の合計金額"""
+        total_amount = 0
+        for product in self.products.all():
+            # 各カート商品の小計を加算
+            total_amount += product.sub_total
+        return total_amount
+
+
+class CartProduct(models.Model):
+    class Meta:
+        db_table = "cart_product"
+
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="products")
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="cart_products"
+    )
+    quantity = models.IntegerField("数量", null=False, default=1)
+    created_at = models.DateTimeField("登録日時", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+
+    def __str__(self):
+        return f"{self.product.name} (Quantity: {self.quantity}) in Cart {self.cart.session_key}"
+
+    @property
+    def sub_total(self):
+        """各カート商品の小計"""
+        return self.product.price * self.quantity
