@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
 
 
@@ -72,3 +73,72 @@ class CartProduct(models.Model):
     def sub_total(self):
         """各カート商品の小計"""
         return self.product.price * self.quantity
+
+
+class Order(models.Model):
+    STATE_CHOICES = (
+        ("CA", "California"),
+        ("TX", "Texas"),
+        ("FL", "Florida"),
+        ("NY", "New York"),
+    )
+
+    # カード番号のバリデーター
+    CARD_NUMBER_VALIDATOR = RegexValidator(
+        regex=r"^(?:\d{13}|\d{15}|\d{16})$",  # 13桁、15桁、または16桁の数字
+        message="カード番号は13桁、15桁、または16桁の数字である必要があります。",
+    )
+
+    # カード有効期限のバリデータ
+    EXPIRATION_DATE_VALIDATOR = RegexValidator(
+        regex=r"^(0[1-9]|1[0-2])\/?([0-9]{2})$",  # MM/YY形式
+        message="カード有効期限はMM/YY形式である必要があります。",
+    )
+
+    # CVV(セキュリティコード)のバリデータ
+    CVV_VALIDATOR = RegexValidator(
+        regex=r"^\d{3,4}$",  # 3桁または4桁の数字
+        message="CVVは3桁または4桁の数字である必要があります。",
+    )
+
+    class Meta:
+        db_table = "order"
+
+    first_name = models.CharField("名前", max_length=20, null=False)
+    last_name = models.CharField("名字", max_length=20, null=False)
+    user_name = models.CharField("ユーザー名", max_length=40, null=False)
+    email = models.EmailField("メールアドレス", blank=True, null=False)
+    address1 = models.TextField("住所1", null=False)
+    address2 = models.TextField("住所2", blank=True, null=False)
+    country = models.CharField("国", max_length=20, null=False, default="United States")
+    state = models.CharField("州", max_length=20, null=False, choices=STATE_CHOICES)
+    zip_code = models.CharField("郵便番号", max_length=20, null=False)
+    card_name = models.CharField("カード名義", max_length=50, null=False)
+    card_number = models.CharField(
+        "カード番号", max_length=16, null=False, validators=[CARD_NUMBER_VALIDATOR]
+    )
+    expiration_date = models.CharField(
+        "カード有効期限",
+        max_length=5,
+        null=False,
+        validators=[EXPIRATION_DATE_VALIDATOR],
+    )
+    cvv = models.CharField(
+        "セキュリティコード", max_length=4, null=False, validators=[CVV_VALIDATOR]
+    )
+    created_at = models.DateTimeField("登録日時", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+
+
+class OrderDetail(models.Model):
+    class Meta:
+        db_table = "order_detail"
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="details")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(
+        "数量", null=False, default=1, validators=[MinValueValidator(1)]
+    )
+    price = models.IntegerField("購入時の値段", null=False)
+    created_at = models.DateTimeField("登録日時", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
