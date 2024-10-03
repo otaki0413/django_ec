@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Product, ProductImage, Cart, CartProduct
+from .models import Product, ProductImage, Cart, CartProduct, Order, OrderDetail
 
 
 @admin.register(Product)
@@ -25,4 +25,16 @@ class CartAdmin(admin.ModelAdmin):
 @admin.register(CartProduct)
 class CartProductAdmin(admin.ModelAdmin):
     model = CartProduct
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    model = Order
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(OrderDetail)
+class OrderDetailAdmin(admin.ModelAdmin):
+    model = OrderDetail
     readonly_fields = ("created_at", "updated_at")
