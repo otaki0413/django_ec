@@ -1,8 +1,10 @@
-from django.views.generic import ListView, DetailView, TemplateView, View
+from django.views.generic import ListView, DetailView, CreateView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
+from django.urls import reverse_lazy
 
-from .models import Product, Cart, CartProduct
+from .forms import CheckoutForm
+from .models import Product, Cart, CartProduct, Order
 
 
 class ProductListView(ListView):
@@ -35,12 +37,14 @@ class ProductDetailView(DetailView):
         return context
 
 
-class CheckoutView(TemplateView):
+class CheckoutView(CreateView):
+    model = Order
+    form_class = CheckoutForm
     template_name = "ec/checkout.html"
+    success_url = reverse_lazy("ec:product_list")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-
         # セッションキーの取得
         session_key = self.request.session.session_key
         # セッションキーが存在しない場合は、空のカートとする
@@ -48,13 +52,11 @@ class CheckoutView(TemplateView):
             context["cart"] = None
             context["cart_product_list"] = []
             return context
-
         try:
             # カートの取得
             cart = Cart.objects.prefetch_related("products").get(
                 session_key=session_key
             )
-
             # カートとカート内商品の情報をコンテキストに渡す
             context["cart"] = cart
             context["cart_product_list"] = cart.products.all()
@@ -65,6 +67,15 @@ class CheckoutView(TemplateView):
             context["cart_product_list"] = []
 
         return context
+
+    def form_valid(self, form):
+        # Orderモデルのインスタンスを保存
+        order = form.save()
+        # TODO:OrderDetailデータの登録処理を書く
+        return super().form_valid(form)
+
+    def create_order_detail(self):
+        pass
 
 
 class AddToCartView(View):
