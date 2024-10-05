@@ -76,12 +76,15 @@ class CartProduct(models.Model):
 
 
 class Order(models.Model):
-    STATE_CHOICES = (
+    COUNTRY_CHOICES = [("", "Choose..."), ("US", "United States")]
+
+    STATE_CHOICES = [
+        ("", "Choose..."),
         ("CA", "California"),
         ("TX", "Texas"),
         ("FL", "Florida"),
         ("NY", "New York"),
-    )
+    ]
 
     # カード番号のバリデーター
     CARD_NUMBER_VALIDATOR = RegexValidator(
@@ -110,7 +113,7 @@ class Order(models.Model):
     email = models.EmailField("メールアドレス", blank=True, null=False)
     address1 = models.TextField("住所1", null=False)
     address2 = models.TextField("住所2", blank=True, null=False)
-    country = models.CharField("国", max_length=20, null=False, default="United States")
+    country = models.CharField("国", max_length=20, null=False, choices=COUNTRY_CHOICES)
     state = models.CharField("州", max_length=20, null=False, choices=STATE_CHOICES)
     zip_code = models.CharField("郵便番号", max_length=20, null=False)
     card_name = models.CharField("カード名義", max_length=50, null=False)
