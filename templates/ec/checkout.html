@@ -7,17 +7,12 @@
   <main>
     <div class="py-5 text-center">
       <h2>Checkout form</h2>
-      <p class="lead">
-        Below is an example form built entirely with Bootstrap’s form controls.
-        Each required form group has a validation state that can be triggered by
-        attempting to submit the form without completing it.
-      </p>
     </div>
 
     <div class="row g-5">
       <div class="col-md-5 col-lg-4 order-md-last">
         <h4 class="d-flex justify-content-between align-items-center mb-3">
-          <span class="text-primary">Your cart</span>
+          <span class="text-primary">カートの中身</span>
           <span class="badge bg-primary rounded-pill">{{ cart_product_list.count }}</span>
         </h4>
         <ul class="list-group mb-4">
@@ -58,29 +53,32 @@
         <form class="card p-2">
           <div class="input-group">
             <input type="text" class="form-control" placeholder="Promo code" />
-            <button type="submit" class="btn btn-secondary">Redeem</button>
+            <button type="submit" class="btn btn-secondary">適用</button>
           </div>
         </form>
       </div>
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
       <div class="col-md-7 col-lg-8">
-        <h4 class="mb-3">Billing address</h4>
-        <form method="POST" enctype="multipart/form-data">
+        <h4 class="mb-3">請求先住所</h4>
+        <form method="POST" enctype="multipart/form-data" novalidate>
           {% csrf_token %}
           <div class="row g-3">
             <div class="col-sm-6">
-              <label for="{{ form.first_name.id_for_label }}" class="form-label">First name</label>
+              <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
               {{ form.first_name }}
               <div class="invalid-feedback">Valid first name is required.</div>
             </div>
 
             <div class="col-sm-6">
-              <label for="{{ form.last_name.id_for_label }}" class="form-label">Last name</label>
+              <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
               {{ form.last_name }}
               <div class="invalid-feedback">Valid last name is required.</div>
             </div>
 
             <div class="col-12">
-              <label for="{{ form.user_name.id_for_label }}" class="form-label">Username</label>
+              <label for="{{ form.user_name.id_for_label }}" class="form-label">{{ form.user_name.label }}</label>
               <div class="input-group has-validation">
                 <span class="input-group-text">@</span>
                 {{ form.user_name }}
@@ -90,8 +88,8 @@
 
             <div class="col-12">
               <label for="{{ form.email.id_for_label }}" class="form-label"
-                >Email
-                <span class="text-body-secondary">(Optional)</span></label
+                >{{ form.email.label }}
+                <span class="text-body-secondary">(任意)</span></label
               >
               {{ form.email }}
               <div class="invalid-feedback">
@@ -100,7 +98,7 @@
             </div>
 
             <div class="col-12">
-              <label for="{{ form.address1.id_for_label }}" class="form-label">Address</label>
+              <label for="{{ form.address1.id_for_label }}" class="form-label">{{ form.address1.label }}</label>
               {{ form.address1 }}
               <div class="invalid-feedback">
                 Please enter your shipping address.
@@ -109,26 +107,26 @@
 
             <div class="col-12">
               <label for="{{ form.address2.id_for_label }}" class="form-label"
-                >Address 2
-                <span class="text-body-secondary">(Optional)</span></label
+                >{{ form.address2.label }}
+                <span class="text-body-secondary">(任意)</span></label
               >
               {{ form.address2 }}
             </div>
 
             <div class="col-md-5">
-              <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+              <label for="{{ form.country.id_for_label }}" class="form-label">{{ form.country.label }}</label>
               {{ form.country }}
               <div class="invalid-feedback">Please select a valid country.</div>
             </div>
 
             <div class="col-md-4">
-              <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+              <label for="{{ form.state.id_for_label }}" class="form-label">{{ form.state.label }}</label>
               {{ form.state }}
               <div class="invalid-feedback">Please provide a valid state.</div>
             </div>
 
             <div class="col-md-3">
-              <label for="{{ form.zip_code.id_for_label }}" class="form-label">Zip</label>
+              <label for="{{ form.zip_code.id_for_label }}" class="form-label">{{ form.zip_code.label }}</label>
               {{ form.zip_code }}
               <div class="invalid-feedback">Zip code required.</div>
             </div>
@@ -136,46 +134,28 @@
 
           <hr class="my-4" />
 
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="same-address" />
-            <label class="form-check-label" for="same-address"
-              >Shipping address is the same as my billing address</label
-            >
-          </div>
-
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="save-info" />
-            <label class="form-check-label" for="save-info"
-              >Save this information for next time</label
-            >
-          </div>
-
-          <hr class="my-4" />
-
+          <h4 class="mb-3">クレジットカード情報</h4>
           <div class="row gy-3">
             <div class="col-md-6">
-              <label for="{{ form.card_name.id_for_label }}" class="form-label">Name on card</label>
+              <label for="{{ form.card_name.id_for_label }}" class="form-label">{{ form.card_name.label }}</label>
               {{ form.card_name }}
-              <small class="text-body-secondary"
-                >Full name as displayed on card</small
-              >
               <div class="invalid-feedback">Name on card is required</div>
             </div>
 
             <div class="col-md-6">
-              <label for="{{ form.card_number.id_for_label }}" class="form-label">Credit card number</label>
+              <label for="{{ form.card_number.id_for_label }}" class="form-label">{{ form.card_number.label }}</label>
               {{ form.card_number }}
               <div class="invalid-feedback">Credit card number is required</div>
             </div>
 
             <div class="col-md-3">
-              <label for="{{ form.expiration_date.id_for_label }}" class="form-label">Expiration</label>
+              <label for="{{ form.expiration_date.id_for_label }}" class="form-label">{{ form.expiration_date.label }}</label>
               {{ form.expiration_date }}
               <div class="invalid-feedback">Expiration date required</div>
             </div>
 
             <div class="col-md-3">
-              <label for="{{ form.cvv.id_for_label }}" class="form-label">CVV</label>
+              <label for="{{ form.cvv.id_for_label }}" class="form-label">{{ form.cvv.label }}</label>
               {{ form.cvv }}
               <div class="invalid-feedback">Security code required</div>
             </div>

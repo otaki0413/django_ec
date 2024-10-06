@@ -23,22 +23,57 @@ class CheckoutForm(forms.ModelForm):
             "cvv",
         ]
         widgets = {
-            "email": forms.TextInput(attrs={"placeholder": "you@example.com"}),
+            "first_name": forms.TextInput(
+                attrs={
+                    "placeholder": "太郎",
+                    "class": "form-control",
+                }
+            ),
+            "last_name": forms.TextInput(
+                attrs={
+                    "rows": 2,
+                    "placeholder": "佐藤",
+                    "class": "form-control",
+                }
+            ),
+            "user_name": forms.TextInput(
+                attrs={"placeholder": "sato", "class": "form-control"}
+            ),
+            "email": forms.TextInput(
+                attrs={"placeholder": "taro_sato@example.com", "class": "form-control"}
+            ),
             "address1": forms.Textarea(
-                attrs={"rows": 2, "placeholder": "1234 Main St"}
+                attrs={
+                    "rows": 2,
+                    "placeholder": "石川県金沢市浅野本町2丁目15番3号",
+                    "class": "form-control",
+                }
             ),
             "address2": forms.Textarea(
-                attrs={"rows": 2, "placeholder": "Apartment or suite"}
+                attrs={
+                    "rows": 2,
+                    "placeholder": "グリーンハイツ金沢 102号室",
+                    "class": "form-control",
+                }
+            ),
+            "country": forms.Select(attrs={"class": "form-select"}),
+            "state": forms.Select(attrs={"class": "form-select"}),
+            "zip_code": forms.TextInput(
+                attrs={
+                    "placeholder": "920-0981",
+                    "class": "form-control",
+                }
+            ),
+            "card_name": forms.TextInput(
+                attrs={"placeholder": "SATO TARO", "class": "form-control"}
+            ),
+            "card_number": forms.TextInput(
+                attrs={"placeholder": "1234567891011", "class": "form-control"}
+            ),
+            "expiration_date": forms.TextInput(
+                attrs={"placeholder": "MM/YY", "class": "form-control"}
+            ),
+            "cvv": forms.TextInput(
+                attrs={"placeholder": "1234", "class": "form-control"}
             ),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # 各フォームフィールドのBootstrap設定
-        for field_name, field in self.fields.items():
-            if (field_name == "country") or (field_name == "state"):
-                # countryとstateのフィールドの場合
-                field.widget.attrs["class"] = "form-select"
-            else:
-                # その他のフィールドの場合
-                field.widget.attrs["class"] = "form-control"
