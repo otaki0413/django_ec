@@ -132,6 +132,9 @@ class Order(models.Model):
     created_at = models.DateTimeField("登録日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
+    def __str__(self):
+        return f"Order {self.id} by {self.last_name} {self.first_name} ({self.created_at.strftime('%Y-%m-%d')})"
+
 
 class OrderDetail(models.Model):
     class Meta:
@@ -145,3 +148,6 @@ class OrderDetail(models.Model):
     price = models.IntegerField("購入時の値段", null=False)
     created_at = models.DateTimeField("登録日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity}個) of Order {self.order.id}"

@@ -4,7 +4,7 @@ from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
 
 from .forms import CheckoutForm
-from .models import Product, Cart, CartProduct, Order
+from .models import Product, Cart, CartProduct, Order, OrderDetail
 
 
 class ProductListView(ListView):
@@ -69,13 +69,49 @@ class CheckoutView(CreateView):
         return context
 
     def form_valid(self, form):
+        """フォームが有効な場合の処理"""
         # Orderモデルのインスタンスを保存
         order = form.save()
-        # TODO:OrderDetailデータの登録処理を書く
+        # 注文詳細データの作成
+        self.create_order_detail(order=order)
         return super().form_valid(form)
 
-    def create_order_detail(self):
-        pass
+    def create_order_detail(self, order):
+        """注文詳細データを保存する処理"""
+
+        # セッションキーの取得
+        session_key = self.request.session.session_key
+
+        # 現在のカート取得
+        try:
+            cart = Cart.objects.prefetch_related("products").get(
+                session_key=session_key
+            )
+        except Cart.DoesNotExist:
+            raise ValueError("カートが存在しません。")
+
+        # カート内のすべての商品取得
+        cart_products = cart.products.all()
+
+        if not cart_products:
+            raise ValueError("カート内に商品が存在しません。")
+
+        # カート内の各商品を注文詳細として保存
+        for cp in cart_products:
+            order_detail = OrderDetail(
+                order=order,
+                product=cp.product,
+                quantity=cp.quantity,
+                price=cp.product.price,
+            )
+            order_detail.save()
+
+        # カート内の商品を削除
+        cart_products.delete()
+
+        # カートが空の場合、カート削除
+        if cart.products.count() == 0:
+            cart.delete()
 
 
 class AddToCartView(View):
