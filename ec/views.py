@@ -2,6 +2,7 @@ from django.views.generic import ListView, DetailView, CreateView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
+from django.db import transaction
 
 from .forms import CheckoutForm
 from .models import Product, Cart, CartProduct, Order, OrderDetail
@@ -70,11 +71,22 @@ class CheckoutView(CreateView):
 
     def form_valid(self, form):
         """フォームが有効な場合の処理"""
-        # Orderモデルのインスタンスを保存
-        order = form.save()
-        # 注文詳細データの作成
-        self.create_order_detail(order=order)
-        return super().form_valid(form)
+        try:
+            # トランザクション開始
+            with transaction.atomic():
+                # 注文情報を保存
+                order = form.save()
+                # 注文詳細データの作成
+                self.create_order_detail(order=order)
+
+        except Exception as e:
+            print(f"チェックアウト処理中に例外が発生しました！：{str(e)}")
+            # チェックアウトページにリダイレクト
+            return redirect("ec:checkout")
+
+        else:
+            print("チェックアウト処理が正常に完了しました！")
+            return super().form_valid(form)
 
     def create_order_detail(self, order):
         """注文詳細データを保存する処理"""
@@ -106,12 +118,8 @@ class CheckoutView(CreateView):
             )
             order_detail.save()
 
-        # カート内の商品を削除
-        cart_products.delete()
-
-        # カートが空の場合、カート削除
-        if cart.products.count() == 0:
-            cart.delete()
+        # カート削除（カスケード処理により、カート商品もすべて削除）
+        cart.delete()
 
 
 class AddToCartView(View):
