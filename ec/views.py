@@ -19,7 +19,7 @@ class ProductListView(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # カート商品数をコンテキストに設定
-        context["cart_product_count"] = getCartProductCount(self.request)
+        context["cart_product_count"] = get_cart_product_count(self.request)
         return context
 
 
@@ -34,7 +34,7 @@ class ProductDetailView(DetailView):
             "images"
         ).order_by("-created_at")[:4]
         # カート商品数をコンテキストに設定
-        context["cart_product_count"] = getCartProductCount(self.request)
+        context["cart_product_count"] = get_cart_product_count(self.request)
         return context
 
 
@@ -46,27 +46,16 @@ class CheckoutView(CreateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # セッションキーの取得
-        session_key = self.request.session.session_key
-        # セッションキーが存在しない場合は、空のカートとする
-        if not session_key:
-            context["cart"] = None
-            context["cart_product_list"] = []
-            return context
-        try:
-            # カートの取得
-            cart = Cart.objects.prefetch_related("products").get(
-                session_key=session_key
-            )
-            # カートとカート内商品の情報をコンテキストに渡す
+        # カート取得
+        cart = get_cart_by_session(self.request)
+        if cart:
+            # カートが存在する場合、カートとカート内商品をコンテキストに渡す
             context["cart"] = cart
             context["cart_product_list"] = cart.products.all()
-
-        except Cart.DoesNotExist:
-            # カートが存在しない場合は空のカートとする
+        else:
+            # カートが存在しない場合、空のカートとする
             context["cart"] = None
             context["cart_product_list"] = []
-
         return context
 
     def form_valid(self, form):
@@ -90,21 +79,13 @@ class CheckoutView(CreateView):
 
     def create_order_detail(self, order):
         """注文詳細データを保存する処理"""
-
-        # セッションキーの取得
-        session_key = self.request.session.session_key
-
-        # 現在のカート取得
-        try:
-            cart = Cart.objects.prefetch_related("products").get(
-                session_key=session_key
-            )
-        except Cart.DoesNotExist:
+        # カート取得
+        cart = get_cart_by_session(self.request)
+        if not cart:
             raise ValueError("カートが存在しません。")
 
         # カート内のすべての商品取得
         cart_products = cart.products.all()
-
         if not cart_products:
             raise ValueError("カート内に商品が存在しません。")
 
@@ -198,19 +179,26 @@ class DeleteFromCartView(View):
         return redirect("ec:checkout")
 
 
-def getCartProductCount(request):
-    """カート商品数を取得する処理"""
-    cart_product_count = 0
-
-    # セッションキーの取得
+def get_cart_by_session(request):
+    """セッションキーに基づいてカートを取得する関数"""
     session_key = request.session.session_key
-
-    # カート商品数の取得
     if session_key:
-        cart = Cart.objects.prefetch_related("products").get(session_key=session_key)
-        cart_product_count = cart.products.all().count
+        try:
+            return Cart.objects.prefetch_related("products").get(
+                session_key=session_key
+            )
+        except Cart.DoesNotExist:
+            return None
+    return None
 
-    return cart_product_count
+
+def get_cart_product_count(request):
+    """カート商品数を取得する処理"""
+    cart = get_cart_by_session(request)
+    if cart:
+        # カートが存在する場合
+        return cart.products.count()
+    return 0
 
 
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？
