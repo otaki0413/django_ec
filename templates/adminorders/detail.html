@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}管理者用：購入明細{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <header class="d-flex align-items-center justify-content-between py-4 mb-4 border-bottom">
+    <div>
+      <h1 class="fs-4 fw-bold">購入明細 (ID: {{ order.id }})</h1>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url "adminorders:admin_order_list" %}" class="btn btn-primary" role="button">購入明細一覧へ</a>
+      <a href="{% url "ec:product_list" %}" class="btn btn-dark" role="button">ログアウト</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="row">
+      <div class="col-md-6">
+        <h2 class="fs-5 fw-bold">購入者情報</h2>
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>氏名：</strong> {{ order.last_name }} {{ order.first_name }}
+          </li>
+          <li class="list-group-item">
+            <strong>ユーザー名：</strong> @{{ order.user_name }}
+          </li>
+          <li class="list-group-item">
+            <strong>メールアドレス：</strong> {{ order.email }}
+          </li>
+          <li class="list-group-item">
+            <strong>国：</strong> {{ order.get_country_display }}
+          </li>
+          <li class="list-group-item">
+            <strong>州：</strong> {{ order.get_state_display }}
+          </li>
+          <li class="list-group-item">
+            <strong>注文日時：</strong> {{ order.created_at }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-6">
+        <h2 class="fs-5 fw-bold">配送先情報</h2>
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>住所1：</strong> {{ order.address1 }}
+          </li>
+          <li class="list-group-item">
+            <strong>住所2：</strong> {{ order.address2 }}
+          </li>
+          <li class="list-group-item">
+            <strong>郵便番号：</strong> {{ order.zip_code }}
+          </li>
+        </ul>
+
+        <div class="my-4">
+
+        <h2 class="fs-5 fw-bold">クレジットカード情報（※本来見せないが確認用）</h2>
+        <ul class="list-group">
+          <li class="list-group-item">
+            <strong>カード名義：</strong> {{ order.card_name }}
+          </li>
+          <li class="list-group-item">
+            <strong>カード番号：</strong> {{ order.card_number }}
+          </li>
+          <li class="list-group-item">
+            <strong>カード有効期限：</strong> {{ order.expiration_date }}
+          </li>
+          <li class="list-group-item">
+            <strong>セキュリティコード：</strong> {{ order.cvv }}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <div class="row">
+      <h2 class="fs-5 fw-bold">注文内容</h2>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">商品名</th>
+            <th scope="col">数量</th>
+            <th scope="col">商品価格(※購入時)</th>
+            <th scope="col">小計</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for od in order.details.all %}
+          <tr>
+            <td>{{ od.product.name }}</td>
+            <td>{{ od.quantity }}</td>
+            <td>¥{{ od.price | intcomma }}</td>
+            <td>¥{{ od.sub_total | intcomma }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="d-flex justify-content-end">
+        <h4 class="fw-bold">合計金額：¥{{ order.total_amount | intcomma }}</h4>
+      </div>
+
+    </div>
+  </main>
+</div>
+{% endblock content %}

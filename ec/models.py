@@ -135,6 +135,15 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} by {self.last_name} {self.first_name} ({self.created_at.strftime('%Y-%m-%d')})"
 
+    @property
+    def total_amount(self):
+        """注文商品の合計金額"""
+        total_amount = 0
+        for detail in self.details.all():
+            # 各注文商品の小計を加算
+            total_amount += detail.sub_total
+        return total_amount
+
 
 class OrderDetail(models.Model):
     class Meta:
@@ -151,3 +160,8 @@ class OrderDetail(models.Model):
 
     def __str__(self):
         return f"{self.product.name} ({self.quantity}個) of Order {self.order.id}"
+
+    @property
+    def sub_total(self):
+        """各注文商品の小計"""
+        return self.price * self.quantity

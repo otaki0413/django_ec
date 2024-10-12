@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}管理者用：購入明細一覧{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <header class="d-flex align-items-center justify-content-between py-4 mb-4 border-bottom">
+      <div>
+        <h1 class="fs-4 fw-bold">購入明細一覧</h1>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url "ec:product_list" %}" class="btn btn-dark" role="button">ログアウト</a>
+      </div>
+    </header>
+
+    <main>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">氏名</th>
+                    <th scope="col">ユーザー名</th>
+                    <th scope="col">メールアドレス</th>
+                    <th scope="col">注文日時</th>
+                    <th scope="col">管理者操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in order_list  %}
+                <tr>
+                    <th scope="row">{{ order.id }}</th>
+                    <td>{{ order.last_name }} {{ order.first_name}}</td>
+                    <td>@{{ order.user_name }}</td>
+                    <td>{{ order.email }}</td>
+                    <td>{{ order.created_at }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{% url "adminorders:admin_order_detail" order.id %}" class="btn btn-light border px-4" role="button">詳細</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</div>
+
+{% endblock content %}
