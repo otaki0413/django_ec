@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}チェックアウト{% endblock title %}
 
@@ -28,7 +29,7 @@
             <div class="d-flex flex-column align-items-end gap-1 w-auto">
               <div class="w-100 text-start">
                 <div class="small">数量：{{ cp.quantity }}</div>
-                <div class="small">小計：￥{{ cp.sub_total }}</div>
+                <div class="small">小計：￥{{ cp.sub_total | intcomma }}</div>
               </div>
               <form action="{% url "ec:delete_from_cart" %}" method="POST">
                 {% csrf_token %}
@@ -49,7 +50,7 @@
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span>合計金額</span>
-            <strong>￥{{ cart.total_amount }}</strong>
+            <strong>￥{{ cart.total_amount | intcomma}}</strong>
           </li>
         </ul>
 

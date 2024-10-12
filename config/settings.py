@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "cloudinary",
     "cloudinary_storage",
 ]
@@ -182,3 +183,6 @@ STORAGES = {
 BASICAUTH_USERS = {
     "admin": "pw",
 }
+
+# 何桁おきにカンマで区切るかの設定（humanize）
+NUMBER_GROUPING = 3
