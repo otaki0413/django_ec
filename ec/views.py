@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.db import transaction
+from django.contrib import messages
 
 from .forms import CheckoutForm
 from .models import Product, Cart, CartProduct, Order, OrderDetail
@@ -70,11 +71,18 @@ class CheckoutView(CreateView):
 
         except Exception as e:
             print(f"チェックアウト処理中に例外が発生しました！：{str(e)}")
+            messages.error(
+                self.request,
+                "チェックアウト処理に失敗しました。もう一度お試しください。",
+            )
             # チェックアウトページにリダイレクト
             return redirect("ec:checkout")
 
         else:
             print("チェックアウト処理が正常に完了しました！")
+            messages.success(
+                self.request, "購入ありがとうございます！", extra_tags="success"
+            )
             return super().form_valid(form)
 
     def create_order_detail(self, order):
@@ -120,9 +128,20 @@ class AddToCartView(View):
             quantity = int(request.POST.get("quantity", 1))
             # 数量チェック
             if quantity < 1:
-                return HttpResponseBadRequest("数量は1以上である必要があります。")
+                messages.error(
+                    self.request,
+                    "数量は1以上である必要があります。",
+                    extra_tags="danger",
+                )
+                return redirect("ec:product_detail", pk=product_id)
         except ValueError:
-            return HttpResponseBadRequest("無効な数量が指定されました。")
+            # intへの変換に失敗した場合
+            messages.error(
+                self.request,
+                "無効な数量が指定されました。",
+                extra_tags="danger",
+            )
+            return redirect("ec:product_detail", pk=product_id)
 
         # セッションキーの取得
         session_key = request.session.session_key
@@ -154,6 +173,12 @@ class AddToCartView(View):
         # 参考：https://just-python.com/document/django/views-basic/request-method
         incoming_url = request.META.get("HTTP_REFERER")
 
+        messages.info(
+            self.request,
+            f"カートに『{product.name}』を追加しました。",
+            extra_tags="info",
+        )
+
         # リクエスト元のURLが存在する場合は、そのURLにリダイレクト
         # MEMO：詳細ページからPOSTリクエストした際には、詳細ページにリダイレクトしたかったため、この実装にしている。
         if incoming_url:
@@ -174,6 +199,11 @@ class DeleteFromCartView(View):
 
         # カートから削除
         cart_product.delete()
+        messages.error(
+            self.request,
+            f"カートから『{cart_product.product.name}』を削除しました",
+            extra_tags="success",
+        )
 
         # チェックアウトページにリダイレクト
         return redirect("ec:checkout")
