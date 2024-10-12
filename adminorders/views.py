@@ -1,7 +1,12 @@
 from django.views.generic import ListView, DetailView
+from django.utils.decorators import method_decorator
+
+from basicauth.decorators import basic_auth_required
+
 from ec.models import Order
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminOrderListView(ListView):
     model = Order
     template_name = "adminorders/index.html"
@@ -14,6 +19,7 @@ class AdminOrderListView(ListView):
         )
 
 
+@method_decorator(basic_auth_required, name="dispatch")
 class AdminOrderDetailView(DetailView):
     model = Order
     template_name = "adminorders/detail.html"
