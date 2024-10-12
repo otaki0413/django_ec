@@ -3,6 +3,9 @@
 {% block title %}チェックアウト{% endblock title %}
 
 {% block content %}
+<!-- Navigation（カートアイコン非表示）-->
+{% include "ec/_navigation.html" with hide_cart_button=True %}
+<!-- Checkout section-->
 <div class="container">
   <main>
     <div class="py-5 text-center">
