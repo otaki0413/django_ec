@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "cloudinary",
     "cloudinary_storage",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -186,3 +187,17 @@ BASICAUTH_USERS = {
 
 # 何桁おきにカンマで区切るかの設定（humanize）
 NUMBER_GROUPING = 3
+
+
+# メールサーバー設定
+if IS_HEROKU_APP:
+    # Anymailの設定
+    EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+    ANYMAIL = {"SENDGRID_API_KEY": env("SENDGRID_API_KEY")}
+    FROM_EMAIL = env("FROM_EMAIL")
+    TO_EMAIL = env("TO_EMAIL")
+else:
+    # 開発環境ではコンソールに出力する
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    FROM_EMAIL = "sender@test.com"
+    TO_EMAIL = "receiver@test.com"
