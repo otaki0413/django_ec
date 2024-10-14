@@ -61,18 +61,22 @@ class CheckoutView(CreateView):
     template_name = "ec/checkout.html"
     success_url = reverse_lazy("ec:product_list")
 
+    def get(self, *args, **kwargs):
+        # カート取得
+        cart = get_cart_by_session(self.request)
+        # カートが存在しない場合、一覧ページにリダイレクト
+        if not cart:
+            messages.error(self.request, "カートが空です。", extra_tags="danger")
+            return redirect("ec:product_list")
+        return super().get(*args, **kwargs)
+
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # カート取得
         cart = get_cart_by_session(self.request)
-        if cart:
-            # カートが存在する場合、カートとカート内商品をコンテキストに渡す
-            context["cart"] = cart
-            context["cart_product_list"] = cart.products.all()
-        else:
-            # カートが存在しない場合、空のカートとする
-            context["cart"] = None
-            context["cart_product_list"] = []
+        # カート関連の情報をコンテキストに設定
+        context["cart"] = cart
+        context["cart_product_list"] = cart.products.all() if cart else []
         return context
 
     def form_valid(self, form):
