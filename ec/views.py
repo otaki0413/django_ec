@@ -11,20 +11,6 @@ from .forms import CheckoutForm
 from .models import Product, Cart, CartProduct, Order, OrderDetail
 
 
-class SendEmailView(View):
-    """メール送信処理"""
-
-    def post(self, request, *args, **kwargs):
-        send_mail(
-            subject="テスト件名",
-            message="テスト本文",
-            from_email=settings.FROM_EMAIL,
-            recipient_list=[settings.TO_EMAIL],
-        )
-        messages.success(request, "メールを送信しました")
-        return redirect("ec:product_list")
-
-
 class ProductListView(ListView):
     model = Product
     template_name = "ec/index.html"

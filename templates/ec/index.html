@@ -15,12 +15,6 @@
         </div>
     </div>
 </header>
-
-<div>メールの送信練習</div>
-<form action="{% url "ec:send_email" %}" method="POST">
-  {% csrf_token %}
-  <button type="submit" name="send_button">メールを送信する</button>
-</form>
 <!-- Section-->
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">

@@ -19,5 +19,4 @@ urlpatterns = [
     path(
         "delete_from_cart/", views.DeleteFromCartView.as_view(), name="delete_from_cart"
     ),
-    path("send_email/", views.SendEmailView.as_view(), name="send_email"),
 ]
