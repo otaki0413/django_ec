@@ -85,6 +85,13 @@ class CheckoutView(CreateView):
                 # 注文詳細データの作成
                 self.create_order_detail(order=order)
 
+            # 注文詳細データの取得（必要なデータのみを抽出した辞書型）
+            order_details = OrderDetail.objects.filter(order=order).values(
+                "product__name", "quantity", "price"
+            )
+            # 注文詳細メールの送信処理
+            self.send_order_detail_mail(order=order, order_details=order_details)
+
         except Exception as e:
             print(f"チェックアウト処理中に例外が発生しました！：{str(e)}")
             messages.error(
@@ -126,7 +133,23 @@ class CheckoutView(CreateView):
         # カート削除（カスケード処理により、カート商品もすべて削除）
         cart.delete()
 
-        # TODO: メール送信処理の実装
+    def send_order_detail_mail(self, order, order_details):
+        """注文詳細メールを送信する処理"""
+        # メール本文の作成
+        message_lines = [
+            f"商品: {detail['product__name']}, 数量: {detail['quantity']}, 価格: {detail['price']}円\n"
+            for detail in order_details
+        ]
+        message = "\n".join(message_lines)
+
+        # メール送信
+        send_mail(
+            subject=f"【注文ID:{order.id}】ご注文頂きありがとうございます。",
+            message=message,
+            from_email=settings.FROM_EMAIL,
+            recipient_list=[order.email],
+        )
+        print("注文詳細メールを送信しました！")
 
 
 class AddToCartView(View):

@@ -189,15 +189,12 @@ BASICAUTH_USERS = {
 NUMBER_GROUPING = 3
 
 
-# メールサーバー設定
+# メール送信に関する設定
+FROM_EMAIL = env("FROM_EMAIL")
 if IS_HEROKU_APP:
-    # Anymailの設定
+    # 本番環境用
     EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
     ANYMAIL = {"SENDGRID_API_KEY": env("SENDGRID_API_KEY")}
-    FROM_EMAIL = env("FROM_EMAIL")
-    TO_EMAIL = env("TO_EMAIL")
 else:
-    # 開発環境ではコンソールに出力する
+    # 開発環境用
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-    FROM_EMAIL = "sender@test.com"
-    TO_EMAIL = "receiver@test.com"
