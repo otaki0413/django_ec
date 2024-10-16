@@ -49,14 +49,17 @@ else:
 INSTALLED_APPS = [
     "ec.apps.EcConfig",
     "adminproducts.apps.AdminproductsConfig",
+    "adminorders.apps.AdminordersConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "cloudinary",
     "cloudinary_storage",
+    "anymail",
 ]
 
 MIDDLEWARE = [
@@ -181,3 +184,17 @@ STORAGES = {
 BASICAUTH_USERS = {
     "admin": "pw",
 }
+
+# 何桁おきにカンマで区切るかの設定（humanize）
+NUMBER_GROUPING = 3
+
+
+# メール送信に関する設定
+FROM_EMAIL = env("FROM_EMAIL")
+if IS_HEROKU_APP:
+    # 本番環境用
+    EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+    ANYMAIL = {"SENDGRID_API_KEY": env("SENDGRID_API_KEY")}
+else:
+    # 開発環境用
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

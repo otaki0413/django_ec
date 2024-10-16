@@ -24,4 +24,5 @@ urlpatterns = [
     path("hello/", TemplateView.as_view(template_name="hello.html")),
     path("", include("ec.urls")),
     path("admin-products/", include("adminproducts.urls")),
+    path("admin-orders/", include("adminorders.urls")),
 ]

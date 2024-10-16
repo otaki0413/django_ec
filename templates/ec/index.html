@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}商品一覧{% endblock title %}
 
 {% block content %}
-<!-- Navigation-->
-{% include "ec/_navigation.html" with cart_product_count=cart_product_count %}
+<!-- Navigation（カートアイコン表示）-->
+{% include "ec/_navigation.html" with cart_product_count=cart_product_count hide_cart_button=False %}
 <!-- Header-->
 <header class="bg-dark py-5">
     <div class="container px-4 px-lg-5 my-5">
@@ -35,7 +36,7 @@
                             <!-- Product name-->
                             <h5 class="fw-bolder">{{ product.name }}</h5>
                             <!-- Product price-->
-                            <span>￥{{ product.price }}</span>
+                            <span>￥{{ product.price | intcomma }}</span>
                         </div>
                     </div>
                     <!-- Product actions-->

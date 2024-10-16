@@ -1,23 +1,22 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}チェックアウト{% endblock title %}
 
 {% block content %}
+<!-- Navigation（カートアイコン非表示）-->
+{% include "ec/_navigation.html" with hide_cart_button=True %}
+<!-- Checkout section-->
 <div class="container">
   <main>
     <div class="py-5 text-center">
       <h2>Checkout form</h2>
-      <p class="lead">
-        Below is an example form built entirely with Bootstrap’s form controls.
-        Each required form group has a validation state that can be triggered by
-        attempting to submit the form without completing it.
-      </p>
     </div>
 
     <div class="row g-5">
       <div class="col-md-5 col-lg-4 order-md-last">
         <h4 class="d-flex justify-content-between align-items-center mb-3">
-          <span class="text-primary">Your cart</span>
+          <span class="text-primary">カートの中身</span>
           <span class="badge bg-primary rounded-pill">{{ cart_product_list.count }}</span>
         </h4>
         <ul class="list-group mb-4">
@@ -30,7 +29,7 @@
             <div class="d-flex flex-column align-items-end gap-1 w-auto">
               <div class="w-100 text-start">
                 <div class="small">数量：{{ cp.quantity }}</div>
-                <div class="small">小計：￥{{ cp.sub_total }}</div>
+                <div class="small">小計：￥{{ cp.sub_total | intcomma }}</div>
               </div>
               <form action="{% url "ec:delete_from_cart" %}" method="POST">
                 {% csrf_token %}
@@ -51,250 +50,199 @@
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span>合計金額</span>
-            <strong>￥{{ cart.total_amount }}</strong>
+            <strong>￥{{ cart.total_amount | intcomma}}</strong>
           </li>
         </ul>
 
         <form class="card p-2">
           <div class="input-group">
             <input type="text" class="form-control" placeholder="Promo code" />
-            <button type="submit" class="btn btn-secondary">Redeem</button>
+            <button type="submit" class="btn btn-secondary">適用</button>
           </div>
         </form>
       </div>
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
       <div class="col-md-7 col-lg-8">
-        <h4 class="mb-3">Billing address</h4>
-        <form class="needs-validation" novalidate>
+        <h4 class="mb-3">請求先住所</h4>
+        <form method="POST" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
           <div class="row g-3">
             <div class="col-sm-6">
-              <label for="firstName" class="form-label">First name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="firstName"
-                placeholder=""
-                value=""
-                required
-              />
-              <div class="invalid-feedback">Valid first name is required.</div>
+              <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+              <div class="text-danger">
+                {% for error in form.first_name.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-sm-6">
-              <label for="lastName" class="form-label">Last name</label>
-              <input
-                type="text"
-                class="form-control"
-                id="lastName"
-                placeholder=""
-                value=""
-                required
-              />
-              <div class="invalid-feedback">Valid last name is required.</div>
+              <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+              <div class="text-danger">
+                {% for error in form.last_name.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-12">
-              <label for="username" class="form-label">Username</label>
+              <label for="{{ form.user_name.id_for_label }}" class="form-label">{{ form.user_name.label }}</label>
               <div class="input-group has-validation">
                 <span class="input-group-text">@</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="username"
-                  placeholder="Username"
-                  required
-                />
-                <div class="invalid-feedback">Your username is required.</div>
+                {{ form.user_name }}
               </div>
+              {% if form.user_name.errors %}
+              <div class="text-danger">
+                {% for error in form.user_name.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-12">
-              <label for="email" class="form-label"
-                >Email
-                <span class="text-body-secondary">(Optional)</span></label
+              <label for="{{ form.email.id_for_label }}" class="form-label"
+                >{{ form.email.label }}
+                <span class="text-body-secondary">(任意)</span></label
               >
-              <input
-                type="email"
-                class="form-control"
-                id="email"
-                placeholder="you@example.com"
-              />
-              <div class="invalid-feedback">
-                Please enter a valid email address for shipping updates.
+              {{ form.email }}
+              {% if form.email.errors %}
+              <div class="text-danger">
+                {% for error in form.email.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
               </div>
+              {% endif %}
             </div>
 
             <div class="col-12">
-              <label for="address" class="form-label">Address</label>
-              <input
-                type="text"
-                class="form-control"
-                id="address"
-                placeholder="1234 Main St"
-                required
-              />
-              <div class="invalid-feedback">
-                Please enter your shipping address.
+              <label for="{{ form.address1.id_for_label }}" class="form-label">{{ form.address1.label }}</label>
+              {{ form.address1 }}
+              {% if form.address1.errors %}
+              <div class="text-danger">
+                {% for error in form.address1.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
               </div>
+              {% endif %}
             </div>
 
             <div class="col-12">
-              <label for="address2" class="form-label"
-                >Address 2
-                <span class="text-body-secondary">(Optional)</span></label
+              <label for="{{ form.address2.id_for_label }}" class="form-label"
+                >{{ form.address2.label }}
+                <span class="text-body-secondary">(任意)</span></label
               >
-              <input
-                type="text"
-                class="form-control"
-                id="address2"
-                placeholder="Apartment or suite"
-              />
-            </div>
-
-            <div class="col-md-5">
-              <label for="country" class="form-label">Country</label>
-              <select class="form-select" id="country" required>
-                <option value="">Choose...</option>
-                <option>United States</option>
-              </select>
-              <div class="invalid-feedback">Please select a valid country.</div>
+              {{ form.address2 }}
+              {% if form.address2.errors %}
+              <div class="text-danger">
+                {% for error in form.address2.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-md-4">
-              <label for="state" class="form-label">State</label>
-              <select class="form-select" id="state" required>
-                <option value="">Choose...</option>
-                <option>California</option>
-              </select>
-              <div class="invalid-feedback">Please provide a valid state.</div>
+              <label for="{{ form.country.id_for_label }}" class="form-label">{{ form.country.label }}</label>
+              {{ form.country }}
+              {% if form.country.errors %}
+              <div class="text-danger">
+                {% for error in form.country.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
-            <div class="col-md-3">
-              <label for="zip" class="form-label">Zip</label>
-              <input
-                type="text"
-                class="form-control"
-                id="zip"
-                placeholder=""
-                required
-              />
-              <div class="invalid-feedback">Zip code required.</div>
+            <div class="col-md-4">
+              <label for="{{ form.state.id_for_label }}" class="form-label">{{ form.state.label }}</label>
+              {{ form.state }}
+              {% if form.state.errors %}
+              <div class="text-danger">
+                {% for error in form.state.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <label for="{{ form.zip_code.id_for_label }}" class="form-label">{{ form.zip_code.label }}</label>
+              {{ form.zip_code }}
+              {% if form.zip_code.errors %}
+              <div class="text-danger">
+                {% for error in form.zip_code.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
           </div>
 
           <hr class="my-4" />
 
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="same-address" />
-            <label class="form-check-label" for="same-address"
-              >Shipping address is the same as my billing address</label
-            >
-          </div>
-
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="save-info" />
-            <label class="form-check-label" for="save-info"
-              >Save this information for next time</label
-            >
-          </div>
-
-          <hr class="my-4" />
-
-          <h4 class="mb-3">Payment</h4>
-
-          <div class="my-3">
-            <div class="form-check">
-              <input
-                id="credit"
-                name="paymentMethod"
-                type="radio"
-                class="form-check-input"
-                checked
-                required
-              />
-              <label class="form-check-label" for="credit">Credit card</label>
-            </div>
-            <div class="form-check">
-              <input
-                id="debit"
-                name="paymentMethod"
-                type="radio"
-                class="form-check-input"
-                required
-              />
-              <label class="form-check-label" for="debit">Debit card</label>
-            </div>
-            <div class="form-check">
-              <input
-                id="paypal"
-                name="paymentMethod"
-                type="radio"
-                class="form-check-input"
-                required
-              />
-              <label class="form-check-label" for="paypal">PayPal</label>
-            </div>
-          </div>
-
+          <h4 class="mb-3">クレジットカード情報</h4>
           <div class="row gy-3">
             <div class="col-md-6">
-              <label for="cc-name" class="form-label">Name on card</label>
-              <input
-                type="text"
-                class="form-control"
-                id="cc-name"
-                placeholder=""
-                required
-              />
-              <small class="text-body-secondary"
-                >Full name as displayed on card</small
-              >
-              <div class="invalid-feedback">Name on card is required</div>
+              <label for="{{ form.card_name.id_for_label }}" class="form-label">{{ form.card_name.label }}</label>
+              {{ form.card_name }}
+              {% if form.card_name.errors %}
+              <div class="text-danger">
+                {% for error in form.card_name.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-md-6">
-              <label for="cc-number" class="form-label"
-                >Credit card number</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="cc-number"
-                placeholder=""
-                required
-              />
-              <div class="invalid-feedback">Credit card number is required</div>
+              <label for="{{ form.card_number.id_for_label }}" class="form-label">{{ form.card_number.label }}</label>
+              {{ form.card_number }}
+              {% if form.card_number.errors %}
+              <div class="text-danger">
+                {% for error in form.card_number.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-md-3">
-              <label for="cc-expiration" class="form-label">Expiration</label>
-              <input
-                type="text"
-                class="form-control"
-                id="cc-expiration"
-                placeholder=""
-                required
-              />
-              <div class="invalid-feedback">Expiration date required</div>
+              <label for="{{ form.expiration_date.id_for_label }}" class="form-label">{{ form.expiration_date.label }}</label>
+              {{ form.expiration_date }}
+              {% if form.expiration_date.errors %}
+              <div class="text-danger">
+                {% for error in form.expiration_date.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
 
             <div class="col-md-3">
-              <label for="cc-cvv" class="form-label">CVV</label>
-              <input
-                type="text"
-                class="form-control"
-                id="cc-cvv"
-                placeholder=""
-                required
-              />
-              <div class="invalid-feedback">Security code required</div>
+              <label for="{{ form.cvv.id_for_label }}" class="form-label">{{ form.cvv.label }}</label>
+              {{ form.cvv }}
+              {% if form.cvv.errors %}
+              <div class="text-danger">
+                {% for error in form.cvv.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
           </div>
 
           <hr class="my-4" />
 
-          <button class="w-100 btn btn-primary btn-lg" type="submit">
-            Continue to checkout
-          </button>
+          <button type="submit" class="w-100 btn btn-primary btn-lg">購入する</button>
         </form>
       </div>
     </div>
