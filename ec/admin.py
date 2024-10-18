@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from .models import Product, ProductImage, Cart, CartProduct, Order, OrderDetail
+from .models import (
+    Product,
+    ProductImage,
+    Cart,
+    CartProduct,
+    Order,
+    OrderDetail,
+    PromotionCode,
+)
 
 
 @admin.register(Product)
@@ -37,4 +45,10 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(OrderDetail)
 class OrderDetailAdmin(admin.ModelAdmin):
     model = OrderDetail
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(PromotionCode)
+class PromotionCodeAdmin(admin.ModelAdmin):
+    model = PromotionCode
     readonly_fields = ("created_at", "updated_at")
