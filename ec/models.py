@@ -172,7 +172,11 @@ class PromotionCode(models.Model):
         db_table = "promotion_code"
 
     order = models.OneToOneField(
-        Order, on_delete=models.CASCADE, related_name="promotion_code"
+        Order,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="promotion_code",
     )
     code = models.CharField(
         "プロモーションコード", max_length=7, null=False, unique=True
@@ -184,4 +188,4 @@ class PromotionCode(models.Model):
 
     def __str__(self):
         status = "適用済み" if self.is_applied else "未適用"
-        return f"{self.code} ({status})"
+        return f"{self.code} : {self.discount_amount}円 ({status})"
