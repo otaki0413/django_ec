@@ -235,6 +235,21 @@ class DeleteFromCartView(View):
             extra_tags="success",
         )
 
+        # カート取得
+        cart = get_cart_by_session(request=request)
+
+        # カート内の商品の数を確認
+        if cart and cart.products.count() == 0:
+            # カートが空であれば、カート削除
+            cart.delete()
+            messages.info(
+                self.request,
+                "カートが空になりました。",
+                extra_tags="info",
+            )
+            # 商品一覧ページへリダイレクト
+            return redirect("ec:product_list")
+
         # チェックアウトページにリダイレクト
         return redirect("ec:checkout")
 
