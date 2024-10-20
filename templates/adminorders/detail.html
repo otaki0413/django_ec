@@ -100,8 +100,11 @@
         </tbody>
       </table>
 
-      <div class="d-flex justify-content-end">
-        <h4 class="fw-bold">合計金額：¥{{ order.total_amount | intcomma }}</h4>
+      <div class="d-flex flex-column align-items-end">
+        {% if order.promotion_code %}
+          <h2 class="fs-5">プロモーションコードの割引額：¥{{ order.promotion_code.discount_amount | intcomma }}</h2>
+        {% endif %}
+        <h4 class="fw-bold">合計金額：¥{{ total_amount | intcomma }}</h4>
       </div>
 
     </div>
