@@ -19,4 +19,9 @@ urlpatterns = [
     path(
         "delete_from_cart/", views.DeleteFromCartView.as_view(), name="delete_from_cart"
     ),
+    path(
+        "apply_promotion_code",
+        views.ApplyPromotionCode.as_view(),
+        name="apply_promotion_code",
+    ),
 ]
