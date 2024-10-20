@@ -65,14 +65,24 @@ class CheckoutView(CreateView):
 
     def form_valid(self, form):
         """フォームが有効な場合の処理"""
+        promo_code = None  # プロモーションコードのインスタンス初期化
         try:
+            # セッションからプロモーションコード取得
+            promo_code_id = self.request.session.get("promo_code")
+            if promo_code_id:
+                promo_code = PromotionCode.objects.get(id=promo_code_id)
+
             # トランザクション開始
             with transaction.atomic():
                 # 注文情報を保存
                 order = form.save()
                 # 注文詳細データの作成
                 self.create_order_detail(order=order)
-                # TODO:プロモーションコードの適用
+                # プロモーションコードを使用済みにする
+                if promo_code:
+                    promo_code.order = order
+                    promo_code.is_applied = True
+                    promo_code.save()
 
             # 注文詳細データの取得（必要なデータのみを抽出した辞書型）
             order_details = OrderDetail.objects.filter(order=order).values(
@@ -80,6 +90,14 @@ class CheckoutView(CreateView):
             )
             # 注文詳細メールの送信処理
             self.send_order_detail_mail(order=order, order_details=order_details)
+
+        except PromotionCode.DoesNotExist:
+            messages.error(
+                self.request,
+                "指定されたプロモーションコードが存在しません。もう一度お試しください。",
+            )
+            # チェックアウトページにリダイレクト
+            return redirect("ec:checkout")
 
         except Exception as e:
             print(f"チェックアウト処理中に例外が発生しました！：{str(e)}")
@@ -91,6 +109,10 @@ class CheckoutView(CreateView):
             return redirect("ec:checkout")
 
         else:
+            # チェックアウト成功時にセッションからプロモーションコード削除
+            if "promo_code" in self.request.session:
+                del self.request.session["promo_code"]
+
             print("チェックアウト処理が正常に完了しました！")
             messages.success(
                 self.request, "購入ありがとうございます！", extra_tags="success"
@@ -282,11 +304,15 @@ class ApplyPromotionCode(View):
                 )
                 return redirect("ec:checkout")
 
+            # プロモーションコードをセッションに保存する
+            request.session["promo_code"] = promo_code.id
+
             messages.success(
                 self.request,
                 f"プロモーションコード'{promo_code.code}'が適用されました。",
                 extra_tags="success",
             )
+
             # プロモーションコードを適用したコンテキスト作成
             context = create_cart_context_with_promo_code(
                 request=request, promo_code=promo_code
