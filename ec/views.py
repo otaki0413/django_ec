@@ -148,9 +148,22 @@ class CheckoutView(CreateView):
         """注文詳細メールを送信する処理"""
         # メール本文の作成
         message_lines = [
-            f"商品: {detail['product__name']}, 数量: {detail['quantity']}, 価格: {detail['price']}円\n"
+            f"商品: {detail['product__name']}, 数量: {detail['quantity']}, 価格: {detail['price']} 小計: {detail['price'] * detail['quantity']}円"
             for detail in order_details
         ]
+        # プロモーションコードがあれば割引額追加
+        discount_amount = (
+            order.promotion_code.discount_amount if order.promotion_code else 0
+        )
+        message_lines.append(f"プロモーションコード割引額: {discount_amount}円\n")
+
+        # 割引額を適用した合計額を追加
+        total_amount = (
+            sum(detail["price"] * detail["quantity"] for detail in order_details)
+            - discount_amount
+        )
+        message_lines.append(f"合計金額: {max(0, total_amount)}円\n")
+
         message = "\n".join(message_lines)
 
         # メール送信
