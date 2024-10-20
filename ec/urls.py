@@ -21,7 +21,7 @@ urlpatterns = [
     ),
     path(
         "apply_promotion_code",
-        views.ApplyPromotionCode.as_view(),
+        views.ApplyPromotionCodeView.as_view(),
         name="apply_promotion_code",
     ),
 ]

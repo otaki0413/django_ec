@@ -276,7 +276,7 @@ class DeleteFromCartView(View):
         return redirect("ec:checkout")
 
 
-class ApplyPromotionCode(View):
+class ApplyPromotionCodeView(View):
     """プロモーションコードを適用する処理"""
 
     def post(self, request, *args, **kwargs):
