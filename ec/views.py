@@ -51,7 +51,7 @@ class CheckoutView(CreateView):
         # カート取得
         cart = get_cart_by_session(self.request)
         # カートが存在しない場合、一覧ページにリダイレクト
-        if not cart:
+        if cart is None:
             messages.error(self.request, "カートが空です。", extra_tags="danger")
             return redirect("ec:product_list")
         return super().get(*args, **kwargs)
@@ -69,7 +69,7 @@ class CheckoutView(CreateView):
         try:
             # セッションからプロモーションコード取得
             promo_code_id = self.request.session.get("promo_code")
-            if promo_code_id:
+            if promo_code_id is not None:
                 promo_code = PromotionCode.objects.get(id=promo_code_id)
 
             # トランザクション開始
@@ -79,7 +79,7 @@ class CheckoutView(CreateView):
                 # 注文詳細データの作成
                 self.create_order_detail(order=order)
                 # プロモーションコードを使用済みにする
-                if promo_code:
+                if promo_code is not None:
                     promo_code.order = order
                     promo_code.is_applied = True
                     promo_code.save()
@@ -95,6 +95,7 @@ class CheckoutView(CreateView):
             messages.error(
                 self.request,
                 "指定されたプロモーションコードが存在しません。もう一度お試しください。",
+                extra_tags="danger",
             )
             # チェックアウトページにリダイレクト
             return redirect("ec:checkout")
@@ -123,12 +124,12 @@ class CheckoutView(CreateView):
         """注文詳細データを保存する処理"""
         # カート取得
         cart = get_cart_by_session(self.request)
-        if not cart:
+        if cart is None:
             raise ValueError("カートが存在しません。")
 
         # カート内のすべての商品取得
         cart_products = cart.products.all()
-        if not cart_products:
+        if not cart_products.exists():
             raise ValueError("カート内に商品が存在しません。")
 
         # カート内の各商品を注文詳細として保存
@@ -182,7 +183,7 @@ class AddToCartView(View):
     def post(self, request, *args, **kwargs):
         # フォームデータから商品ID取得
         product_id = request.POST.get("product_id")
-        if not product_id:
+        if product_id is None:
             return HttpResponseBadRequest("商品が選択されていません。")
 
         # 商品の取得（存在しない場合404エラー）
@@ -211,7 +212,7 @@ class AddToCartView(View):
         # セッションキーの取得
         session_key = request.session.session_key
         # セッションキーが存在しない場合は、新規作成
-        if not session_key:
+        if session_key is None:
             request.session.create()
             session_key = request.session.session_key
 
@@ -274,7 +275,7 @@ class DeleteFromCartView(View):
         cart = get_cart_by_session(request=request)
 
         # カート内の商品の数を確認
-        if cart and cart.products.count() == 0:
+        if cart is not None and not cart.products.exists():
             # カートが空であれば、カート削除
             cart.delete()
             messages.info(
@@ -294,9 +295,9 @@ class ApplyPromotionCodeView(View):
 
     def post(self, request, *args, **kwargs):
         # 入力されたコードを取得
-        code = request.POST.get("code", "")
+        code = request.POST.get("code")
         # コードが空の場合、リダイレクト
-        if not code:
+        if code is None:
             messages.error(
                 self.request,
                 "プロモーションコードが何も入力されていません。",
@@ -371,14 +372,14 @@ def create_cart_context_with_promo_code(request, promo_code=None):
     """カートとプロモーションコードの情報に基づいてコンテキストを生成する関数"""
     # カート取得
     cart = get_cart_by_session(request)
-    if not cart:
+    if cart is None:
         raise ValueError("カートが存在しません。")
 
     # カート情報をコンテキストに設定
     context = {"cart": cart, "cart_product_list": cart.products.all() if cart else []}
 
     # プロモーションコード有無に応じた、合計金額の計算
-    if promo_code:
+    if promo_code is not None:
         discount_amount = promo_code.discount_amount
         # 割引後の合計金額（0円より小さくならないようにする）
         total_amount = max(0, cart.total_amount - discount_amount)
