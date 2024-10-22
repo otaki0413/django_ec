@@ -153,9 +153,9 @@ class CheckoutView(CreateView):
             for detail in order_details
         ]
         # プロモーションコードがあれば割引額追加
-        discount_amount = (
-            order.promotion_code.discount_amount if order.promotion_code else 0
-        )
+        discount_amount = 0
+        if hasattr(order, "promotion_code") and order.promotion_code is not None:
+            discount_amount = order.promotion_code.discount_amount
         message_lines.append(f"プロモーションコード割引額: {discount_amount}円\n")
 
         # 割引額を適用した合計額を追加
