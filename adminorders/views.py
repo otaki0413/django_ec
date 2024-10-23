@@ -27,4 +27,22 @@ class AdminOrderDetailView(DetailView):
 
     def get_queryset(self):
         # template側で、Orderモデルのインスタンスに紐づくget_FOO_display()を使用したいので、values()は使用しない
-        return Order.objects.prefetch_related("details")
+        return Order.objects.select_related("promotion_code").prefetch_related(
+            "details"
+        )
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        # Orderインスタンス取得
+        order = self.get_object()
+        # プロモーションコードがあれば取得
+        promotion_code = (
+            order.promotion_code if hasattr(order, "promotion_code") else None
+        )
+        # 割引額を取得
+        discount_amount = promotion_code.discount_amount if promotion_code else 0
+        # 注文の合計金額を計算
+        total_amount = max(0, order.total_amount - discount_amount)
+        # 合計金額をコンテキストに追加
+        context["total_amount"] = total_amount
+        return context

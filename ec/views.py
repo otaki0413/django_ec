@@ -1,5 +1,5 @@
 from django.views.generic import ListView, DetailView, CreateView, View
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponseBadRequest
 from django.urls import reverse_lazy
 from django.db import transaction
@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from .forms import CheckoutForm
-from .models import Product, Cart, CartProduct, Order, OrderDetail
+from .models import Product, Cart, CartProduct, Order, OrderDetail, PromotionCode
 
 
 class ProductListView(ListView):
@@ -51,29 +51,38 @@ class CheckoutView(CreateView):
         # カート取得
         cart = get_cart_by_session(self.request)
         # カートが存在しない場合、一覧ページにリダイレクト
-        if not cart:
+        if cart is None:
             messages.error(self.request, "カートが空です。", extra_tags="danger")
             return redirect("ec:product_list")
         return super().get(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # カート取得
-        cart = get_cart_by_session(self.request)
-        # カート関連の情報をコンテキストに設定
-        context["cart"] = cart
-        context["cart_product_list"] = cart.products.all() if cart else []
+        # カートやプロモーションコード関連のコンテキスト作成
+        cart_context = create_cart_context_with_promo_code(self.request)
+        context.update(cart_context)
         return context
 
     def form_valid(self, form):
         """フォームが有効な場合の処理"""
+        promo_code = None  # プロモーションコードのインスタンス初期化
         try:
+            # セッションからプロモーションコード取得
+            promo_code_id = self.request.session.get("promo_code")
+            if promo_code_id is not None:
+                promo_code = PromotionCode.objects.get(id=promo_code_id)
+
             # トランザクション開始
             with transaction.atomic():
                 # 注文情報を保存
                 order = form.save()
                 # 注文詳細データの作成
                 self.create_order_detail(order=order)
+                # プロモーションコードを使用済みにする
+                if promo_code is not None:
+                    promo_code.order = order
+                    promo_code.is_applied = True
+                    promo_code.save()
 
             # 注文詳細データの取得（必要なデータのみを抽出した辞書型）
             order_details = OrderDetail.objects.filter(order=order).values(
@@ -81,6 +90,15 @@ class CheckoutView(CreateView):
             )
             # 注文詳細メールの送信処理
             self.send_order_detail_mail(order=order, order_details=order_details)
+
+        except PromotionCode.DoesNotExist:
+            messages.error(
+                self.request,
+                "指定されたプロモーションコードが存在しません。もう一度お試しください。",
+                extra_tags="danger",
+            )
+            # チェックアウトページにリダイレクト
+            return redirect("ec:checkout")
 
         except Exception as e:
             print(f"チェックアウト処理中に例外が発生しました！：{str(e)}")
@@ -92,6 +110,10 @@ class CheckoutView(CreateView):
             return redirect("ec:checkout")
 
         else:
+            # チェックアウト成功時にセッションからプロモーションコード削除
+            if "promo_code" in self.request.session:
+                del self.request.session["promo_code"]
+
             print("チェックアウト処理が正常に完了しました！")
             messages.success(
                 self.request, "購入ありがとうございます！", extra_tags="success"
@@ -102,12 +124,12 @@ class CheckoutView(CreateView):
         """注文詳細データを保存する処理"""
         # カート取得
         cart = get_cart_by_session(self.request)
-        if not cart:
+        if cart is None:
             raise ValueError("カートが存在しません。")
 
         # カート内のすべての商品取得
         cart_products = cart.products.all()
-        if not cart_products:
+        if not cart_products.exists():
             raise ValueError("カート内に商品が存在しません。")
 
         # カート内の各商品を注文詳細として保存
@@ -127,9 +149,22 @@ class CheckoutView(CreateView):
         """注文詳細メールを送信する処理"""
         # メール本文の作成
         message_lines = [
-            f"商品: {detail['product__name']}, 数量: {detail['quantity']}, 価格: {detail['price']}円\n"
+            f"商品: {detail['product__name']}, 数量: {detail['quantity']}, 価格: {detail['price']} 小計: {detail['price'] * detail['quantity']}円"
             for detail in order_details
         ]
+        # プロモーションコードがあれば割引額追加
+        discount_amount = 0
+        if hasattr(order, "promotion_code") and order.promotion_code is not None:
+            discount_amount = order.promotion_code.discount_amount
+        message_lines.append(f"プロモーションコード割引額: {discount_amount}円\n")
+
+        # 割引額を適用した合計額を追加
+        total_amount = (
+            sum(detail["price"] * detail["quantity"] for detail in order_details)
+            - discount_amount
+        )
+        message_lines.append(f"合計金額: {max(0, total_amount)}円\n")
+
         message = "\n".join(message_lines)
 
         # メール送信
@@ -148,7 +183,7 @@ class AddToCartView(View):
     def post(self, request, *args, **kwargs):
         # フォームデータから商品ID取得
         product_id = request.POST.get("product_id")
-        if not product_id:
+        if product_id is None:
             return HttpResponseBadRequest("商品が選択されていません。")
 
         # 商品の取得（存在しない場合404エラー）
@@ -177,7 +212,7 @@ class AddToCartView(View):
         # セッションキーの取得
         session_key = request.session.session_key
         # セッションキーが存在しない場合は、新規作成
-        if not session_key:
+        if session_key is None:
             request.session.create()
             session_key = request.session.session_key
 
@@ -236,8 +271,79 @@ class DeleteFromCartView(View):
             extra_tags="success",
         )
 
+        # カート取得
+        cart = get_cart_by_session(request=request)
+
+        # カート内の商品の数を確認
+        if cart is not None and not cart.products.exists():
+            # カートが空であれば、カート削除
+            cart.delete()
+            messages.info(
+                self.request,
+                "カートが空になりました。",
+                extra_tags="info",
+            )
+            # 商品一覧ページへリダイレクト
+            return redirect("ec:product_list")
+
         # チェックアウトページにリダイレクト
         return redirect("ec:checkout")
+
+
+class ApplyPromotionCodeView(View):
+    """プロモーションコードを適用する処理"""
+
+    def post(self, request, *args, **kwargs):
+        # 入力されたコードを取得
+        code = request.POST.get("code")
+        # コードが空の場合、リダイレクト
+        if code is None:
+            messages.error(
+                self.request,
+                "プロモーションコードが何も入力されていません。",
+                extra_tags="danger",
+            )
+            return redirect("ec:checkout")
+
+        try:
+            # 対象のプロモーションコードの情報を取得
+            promo_code = PromotionCode.objects.get(code=code)
+
+            # プロモーションが使用済みの場合、リダイレクト
+            if promo_code.is_applied:
+                messages.error(
+                    self.request,
+                    f"プロモーションコード'{promo_code.code}'はすでに使用済みです。",
+                    extra_tags="danger",
+                )
+                return redirect("ec:checkout")
+
+            # プロモーションコードをセッションに保存する
+            request.session["promo_code"] = promo_code.id
+
+            messages.success(
+                self.request,
+                f"プロモーションコード'{promo_code.code}'が適用されました。",
+                extra_tags="success",
+            )
+
+            # プロモーションコードを適用したコンテキスト作成
+            context = create_cart_context_with_promo_code(
+                request=request, promo_code=promo_code
+            )
+            # チェックアウトフォームを再度コンテキストに追加
+            context["form"] = CheckoutForm()
+            # コンテキストを反映させたテンプレートを再レンダリング
+            return render(request, "ec/checkout.html", context)
+
+        except PromotionCode.DoesNotExist:
+            # プロモーションコードを取得できない場合、リダイレクト
+            messages.error(
+                self.request,
+                "入力されたプロモーションコードはDBに存在しません。",
+                extra_tags="danger",
+            )
+            return redirect("ec:checkout")
 
 
 def get_cart_by_session(request):
@@ -260,6 +366,30 @@ def get_cart_product_count(request):
         # カートが存在する場合
         return cart.products.count()
     return 0
+
+
+def create_cart_context_with_promo_code(request, promo_code=None):
+    """カートとプロモーションコードの情報に基づいてコンテキストを生成する関数"""
+    # カート取得
+    cart = get_cart_by_session(request)
+    if cart is None:
+        raise ValueError("カートが存在しません。")
+
+    # カート情報をコンテキストに設定
+    context = {"cart": cart, "cart_product_list": cart.products.all() if cart else []}
+
+    # プロモーションコード有無に応じた、合計金額の計算
+    if promo_code is not None:
+        discount_amount = promo_code.discount_amount
+        # 割引後の合計金額（0円より小さくならないようにする）
+        total_amount = max(0, cart.total_amount - discount_amount)
+        context["promo_code"] = promo_code
+    else:
+        total_amount = cart.total_amount
+
+    # コンテキストに合計金額を追加
+    context["total_amount"] = total_amount
+    return context
 
 
 # TODO:セッション有効期限が切れたカートの削除処理処理いる？

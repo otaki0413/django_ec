@@ -165,3 +165,27 @@ class OrderDetail(models.Model):
     def sub_total(self):
         """各注文商品の小計"""
         return self.price * self.quantity
+
+
+class PromotionCode(models.Model):
+    class Meta:
+        db_table = "promotion_code"
+
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="promotion_code",
+    )
+    code = models.CharField(
+        "プロモーションコード", max_length=7, null=False, unique=True
+    )
+    discount_amount = models.PositiveIntegerField("割引額", null=False)
+    is_applied = models.BooleanField("適用済みかどうか", null=False, default=False)
+    created_at = models.DateTimeField("登録日時", auto_now_add=True)
+    updated_at = models.DateTimeField("更新日時", auto_now=True)
+
+    def __str__(self):
+        status = "適用済み" if self.is_applied else "未適用"
+        return f"{self.code} : {self.discount_amount}円 ({status})"

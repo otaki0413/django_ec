@@ -44,19 +44,20 @@
           >
             <div class="text-success">
               <h6 class="my-0">Promo code</h6>
-              <small>EXAMPLECODE</small>
+              <small>{{ promo_code.code }}</small>
             </div>
-            <span class="text-success">−$5</span>
+            <span class="text-success">−¥{{ promo_code.discount_amount }}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span>合計金額</span>
-            <strong>￥{{ cart.total_amount | intcomma}}</strong>
+            <strong>￥{{ total_amount | intcomma}}</strong>
           </li>
         </ul>
 
-        <form class="card p-2">
+        <form action="{% url "ec:apply_promotion_code" %}" method="POST" class="card p-2">
+          {% csrf_token %}
           <div class="input-group">
-            <input type="text" class="form-control" placeholder="Promo code" />
+            <input type="text" name="code" class="form-control" placeholder="Promo code" />
             <button type="submit" class="btn btn-secondary">適用</button>
           </div>
         </form>
@@ -66,7 +67,7 @@
       {% endif %}
       <div class="col-md-7 col-lg-8">
         <h4 class="mb-3">請求先住所</h4>
-        <form method="POST" enctype="multipart/form-data" novalidate>
+        <form method="POST" action="{% url "ec:checkout" %}" novalidate>
           {% csrf_token %}
           <div class="row g-3">
             <div class="col-sm-6">
